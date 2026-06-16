@@ -83,6 +83,10 @@ function tnjg_get_hops(int $resource_id): array
 
     foreach ($rows as $row) {
         $key = (string) $row->hop_key;
+        if ('0' === $key) {
+            continue;
+        }
+
         $hops[$key] = array(
             'key' => $key,
             'label' => $key,

@@ -380,17 +380,23 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
     }
 
     $hop_key = tnjg_offset_key($offset);
-    $landing = $views[0];
-    $exit = $views[count($views) - 1];
-    $landing_subject = $offset >= 0 ? $anchor : $landing;
-    $exit_subject = $offset <= 0 ? $anchor : $exit;
+    $landing_positions = tnjg_landing_range($offset, $anchor_position);
+    $exit_positions = tnjg_exit_range($offset, $anchor_position);
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing_subject->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing_subject, true);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
-    tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing_subject));
+    foreach ($landing_positions as $position) {
+        if (isset($views[$position])) {
+            $landing_subject = $views[$position];
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing_subject->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing_subject, true);
+            tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing_subject));
+        }
+    }
+
+    if (!empty($landing_positions)) {
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
+    }
 
     foreach (tnjg_before_range($offset, $anchor_position) as $position) {
         if (isset($views[$position])) {
@@ -415,8 +421,13 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
         }
     }
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit_subject->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit_subject, true);
-    tnjg_increment_label_item($anchor_id, $hop_key, 'exit_content_types', tnjg_value($exit_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($exit_subject));
+    foreach ($exit_positions as $position) {
+        if (isset($views[$position])) {
+            $exit_subject = $views[$position];
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit_subject->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit_subject, true);
+            tnjg_increment_label_item($anchor_id, $hop_key, 'exit_content_types', tnjg_value($exit_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($exit_subject));
+        }
+    }
 }
 
 function tnjg_offset_key(int $offset): string
@@ -442,6 +453,20 @@ function tnjg_before_range(int $offset, int $anchor_position): array
     return range(0, $end);
 }
 
+function tnjg_landing_range(int $offset, int $anchor_position): array
+{
+    if ($offset >= 0) {
+        return array($anchor_position);
+    }
+
+    $start = $anchor_position + $offset;
+    if ($start < 0) {
+        return array();
+    }
+
+    return range($start, $anchor_position);
+}
+
 function tnjg_after_range(int $offset, int $anchor_position): array
 {
     if ($offset <= 0) {
@@ -449,6 +474,15 @@ function tnjg_after_range(int $offset, int $anchor_position): array
     }
 
     return range($anchor_position + 1, $anchor_position + $offset);
+}
+
+function tnjg_exit_range(int $offset, int $anchor_position): array
+{
+    if ($offset <= 0) {
+        return array($anchor_position);
+    }
+
+    return range($anchor_position, $anchor_position + $offset);
 }
 
 function tnjg_value($value, string $fallback): string

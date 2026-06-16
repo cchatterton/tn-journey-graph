@@ -2,6 +2,15 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.13 - 2026-06-17
+
+- Changed LANDING panels to use cumulative pages from the selected negative hop through hop 0.
+- Changed EXIT panels to use cumulative pages from hop 0 through the selected positive hop.
+- Kept LANDING collapsed to the current page for hop 0 and positive hops.
+- Kept EXIT collapsed to the current page for hop 0 and negative hops.
+- Removed hop 0 from visible tabs.
+- Reset graph aggregates for the cumulative directional panel model.
+
 ## 0.1.12 - 2026-06-17
 
 - Added directional collapse for LANDING and EXIT groups around hop 0.
