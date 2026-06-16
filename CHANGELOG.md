@@ -2,6 +2,10 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.5 - 2026-06-16
+
+- Added a plugin-row "Check for updates" link for active admin contexts.
+
 ## 0.1.4 - 2026-06-16
 
 - Changed the Journey Explorer drawer content to span the full viewport width.

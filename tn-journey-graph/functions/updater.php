@@ -100,6 +100,7 @@ class TNJG_GitHub_Updater
         }
 
         $links[] = '<a href="' . esc_url($this->repo_url()) . '">' . esc_html__('GitHub', 'tn-journey-graph') . '</a>';
+        $links[] = '<a href="' . esc_url($this->check_updates_url()) . '">' . esc_html__('Check for updates', 'tn-journey-graph') . '</a>';
         return $links;
     }
 
@@ -175,6 +176,12 @@ class TNJG_GitHub_Updater
     private function repo_url(): string
     {
         return 'https://github.com/' . self::OWNER . '/' . self::REPO;
+    }
+
+    private function check_updates_url(): string
+    {
+        $base_url = is_multisite() ? network_admin_url('update-core.php') : admin_url('update-core.php');
+        return add_query_arg('force-check', '1', $base_url);
     }
 
     private function is_forced_check(): bool
