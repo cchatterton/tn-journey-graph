@@ -15,6 +15,7 @@ function tnjg_register_github_updater(): void
     add_filter('site_transient_update_plugins', array($updater, 'add_update_data'));
     add_filter('plugins_api', array($updater, 'plugin_details'), 10, 3);
     add_filter('plugin_row_meta', array($updater, 'row_meta'), 10, 2);
+    add_action('admin_init', array($updater, 'handle_manual_update_check'));
     add_action('upgrader_process_complete', array($updater, 'clear_cache_after_upgrade'), 10, 2);
 }
 
@@ -114,6 +115,26 @@ class TNJG_GitHub_Updater
         delete_site_transient(self::ERROR_TRANSIENT);
     }
 
+    public function handle_manual_update_check(): void
+    {
+        if (empty($_GET['tnjg_check_updates'])) {
+            return;
+        }
+
+        if (!current_user_can('update_plugins')) {
+            wp_die(esc_html__('You do not have permission to check for plugin updates.', 'tn-journey-graph'));
+        }
+
+        check_admin_referer('tnjg_check_updates');
+        delete_site_transient(self::RELEASE_TRANSIENT);
+        delete_site_transient(self::ERROR_TRANSIENT);
+        delete_site_transient('update_plugins');
+        wp_update_plugins();
+
+        wp_safe_redirect(add_query_arg('tnjg_checked_updates', '1', $this->plugins_page_url()));
+        exit;
+    }
+
     private function latest_release(): ?array
     {
         if ($this->is_forced_check()) {
@@ -180,8 +201,12 @@ class TNJG_GitHub_Updater
 
     private function check_updates_url(): string
     {
-        $base_url = is_multisite() ? network_admin_url('update-core.php') : admin_url('update-core.php');
-        return add_query_arg('force-check', '1', $base_url);
+        return wp_nonce_url(add_query_arg('tnjg_check_updates', '1', $this->plugins_page_url()), 'tnjg_check_updates');
+    }
+
+    private function plugins_page_url(): string
+    {
+        return is_multisite() ? network_admin_url('plugins.php') : admin_url('plugins.php');
     }
 
     private function is_forced_check(): bool

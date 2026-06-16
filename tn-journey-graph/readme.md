@@ -1,7 +1,7 @@
 # Techn Journey Graph
 
 Author: Techn  
-Version: 0.1.6  
+Version: 0.1.7  
 Status: MVP
 
 ## Purpose

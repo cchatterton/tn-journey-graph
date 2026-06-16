@@ -2,6 +2,10 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.7 - 2026-06-16
+
+- Changed the plugin-row update check link to run a plugin-page GitHub update check and return to the Plugins screen.
+
 ## 0.1.6 - 2026-06-16
 
 - Moved the object type filter into the hop controls row.
