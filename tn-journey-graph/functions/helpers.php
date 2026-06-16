@@ -168,6 +168,7 @@ function tnjg_panel_definitions(): array
 {
     return array(
         'landing_pages' => __('Landing Page Distribution', 'tn-journey-graph'),
+        'exit_pages' => __('Exit Page Distribution', 'tn-journey-graph'),
         'referrer_to' => __('Referrer — To Here', 'tn-journey-graph'),
         'referrer_from' => __('Referrer — From Here', 'tn-journey-graph'),
         'utm_source_to' => __('UTM Source — To Here', 'tn-journey-graph'),

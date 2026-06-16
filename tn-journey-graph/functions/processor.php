@@ -191,19 +191,19 @@ function tnjg_process_single_session(int $session_id): bool
 
     try {
         foreach ($views as $position => $anchor) {
-            tnjg_add_hop_aggregates($anchor, 'landing', $landing, $session, $position, 0);
-            tnjg_add_hop_aggregates($anchor, 'this', $anchor, $session, $position, $position);
-            tnjg_add_hop_aggregates($anchor, 'last', $last, $session, $position, count($views) - 1);
+            tnjg_add_hop_aggregates($anchor, 'landing', $landing, $session, $last, $position, 0);
+            tnjg_add_hop_aggregates($anchor, 'this', $anchor, $session, $last, $position, $position);
+            tnjg_add_hop_aggregates($anchor, 'last', $last, $session, $last, $position, count($views) - 1);
 
             for ($offset = 1; $offset <= $max_prior; $offset++) {
                 if (isset($views[$position - $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '-' . $offset, $views[$position - $offset], $session, $position, $position - $offset);
+                    tnjg_add_hop_aggregates($anchor, '-' . $offset, $views[$position - $offset], $session, $last, $position, $position - $offset);
                 }
             }
 
             for ($offset = 1; $offset <= $max_next; $offset++) {
                 if (isset($views[$position + $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '+' . $offset, $views[$position + $offset], $session, $position, $position + $offset);
+                    tnjg_add_hop_aggregates($anchor, '+' . $offset, $views[$position + $offset], $session, $last, $position, $position + $offset);
                 }
             }
         }
@@ -343,18 +343,16 @@ function tnjg_campaign_joins(): string
     return implode("\n", $joins);
 }
 
-function tnjg_add_hop_aggregates(object $anchor, string $hop_key, object $hop, object $session, int $anchor_position, int $hop_position): void
+function tnjg_add_hop_aggregates(object $anchor, string $hop_key, object $hop, object $session, object $exit, int $anchor_position, int $hop_position): void
 {
     $anchor_id = (int) $anchor->resource_id;
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($session->cached_title, __('Unknown landing page', 'tn-journey-graph')), $session, true);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($hop->cached_title, __('Unknown landing page', 'tn-journey-graph')), $hop, true);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit, true);
     tnjg_increment_content_type_item($anchor_id, $hop_key, tnjg_value($hop->cached_type_label, __('Unknown URL', 'tn-journey-graph')), $hop);
+    tnjg_increment_session_source_items($anchor_id, $hop_key, 'to', $session);
 
-    if (0 === $anchor_position) {
-        tnjg_increment_session_source_items($anchor_id, $hop_key, 'to', $session);
-    }
-
-    if ($hop_position < $anchor_position) {
+    if ($hop_position <= $anchor_position) {
         tnjg_increment_session_source_items($anchor_id, $hop_key, 'from', $session);
     }
 }

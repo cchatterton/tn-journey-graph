@@ -153,7 +153,6 @@
       <article class="tnjg-card">
         <div class="tnjg-card__head">
           <h3>${escapeHtml(panelData.title)}</h3>
-          <span>Top ${items.length}</span>
         </div>
         <div class="tnjg-bars">${body}</div>
       </article>

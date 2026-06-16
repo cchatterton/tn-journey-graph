@@ -2,6 +2,15 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.10 - 2026-06-16
+
+- Removed the panel header "Top x" labels.
+- Right-aligned the close button in the controls row.
+- Added an exit page distribution panel for each selected hop slice.
+- Changed landing page distribution to show the selected hop pages instead of the original session landing page.
+- Kept source panels hop-aware so attribution follows the selected hop slice.
+- Bumped the graph schema reset so stale source aggregates cannot survive the update.
+
 ## 0.1.9 - 2026-06-16
 
 - Removed the drawer title, page name, and freshness text from the front-end panel.
