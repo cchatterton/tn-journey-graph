@@ -2,6 +2,12 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.4 - 2026-06-16
+
+- Changed the Journey Explorer drawer content to span the full viewport width.
+- Compacted the panel typography, spacing, bars, and controls.
+- Changed analytics panels to render in one horizontal row.
+
 ## 0.1.3 - 2026-06-16
 
 - Changed the plugin header URI to the latest GitHub release page for inactive-plugin self-serve updates.
