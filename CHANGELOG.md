@@ -2,6 +2,15 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.9 - 2026-06-16
+
+- Removed the drawer title, page name, and freshness text from the front-end panel.
+- Moved the close button into the controls row.
+- Changed referrer and UTM attribution so "To Here" counts direct landing on the selected page and "From Here" counts prior landing pages in the journey.
+- Grouped content type distribution by content type label instead of individual URLs.
+- Added URL query fallback parsing for UTM labels when IA campaign lookup values are unavailable.
+- Reset existing graph aggregates for reprocessing under the updated model.
+
 ## 0.1.8 - 2026-06-16
 
 - Rebuilt the release artifact with the current plugin version and updater behavior.

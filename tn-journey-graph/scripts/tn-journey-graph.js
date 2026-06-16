@@ -76,13 +76,13 @@
     const content = panel.querySelector(".tnjg-panel__inner");
 
     if (state.loading) {
-      content.innerHTML = shellMarkup(`<div class="tnjg-state">${escapeHtml(root.labels.loading)}</div>`);
+      content.innerHTML = shellMarkup(`${closeControlsMarkup()}<div class="tnjg-state">${escapeHtml(root.labels.loading)}</div>`);
       bindPanelEvents();
       return;
     }
 
     if (!state.data || !state.data.hops || state.data.hops.length === 0) {
-      content.innerHTML = shellMarkup(`<div class="tnjg-state">${escapeHtml((state.data && state.data.emptyMessage) || root.labels.empty)}</div>`);
+      content.innerHTML = shellMarkup(`${closeControlsMarkup()}<div class="tnjg-state">${escapeHtml((state.data && state.data.emptyMessage) || root.labels.empty)}</div>`);
       bindPanelEvents();
       return;
     }
@@ -95,20 +95,7 @@
   }
 
   function shellMarkup(body) {
-    const context = root.context || {};
-    const freshness = state.data && state.data.freshness ? `Data current to ${escapeHtml(state.data.freshness)}` : "Journey data has not been processed yet.";
-
-    return `
-      <header class="tnjg-header">
-        <div>
-          <p class="tnjg-kicker">Journey Explorer</p>
-          <h2>${escapeHtml(context.label || document.title || "Current page")}</h2>
-          <p class="tnjg-freshness">${freshness}</p>
-        </div>
-        <button class="tnjg-close" type="button" aria-label="${escapeHtml(root.labels.close)}">×</button>
-      </header>
-      ${body}
-    `;
+    return body;
   }
 
   function controlsMarkup(hops) {
@@ -121,8 +108,17 @@
           })
           .join("")}
         ${filtersMarkup()}
+        ${closeButtonMarkup()}
       </div>
     `;
+  }
+
+  function closeControlsMarkup() {
+    return `<div class="tnjg-tabs">${closeButtonMarkup()}</div>`;
+  }
+
+  function closeButtonMarkup() {
+    return `<button class="tnjg-close" type="button" aria-label="${escapeHtml(root.labels.close)}">×</button>`;
   }
 
   function filtersMarkup() {
@@ -206,7 +202,7 @@
 
   function renderError() {
     const content = panel.querySelector(".tnjg-panel__inner");
-    content.innerHTML = shellMarkup(`<div class="tnjg-state tnjg-state--error">${escapeHtml(root.labels.error)}</div>`);
+    content.innerHTML = shellMarkup(`${closeControlsMarkup()}<div class="tnjg-state tnjg-state--error">${escapeHtml(root.labels.error)}</div>`);
     bindPanelEvents();
   }
 

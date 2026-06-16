@@ -15,6 +15,8 @@ function tnjg_process_sessions(): void
         return;
     }
 
+    tnjg_maybe_upgrade_graph_schema();
+
     global $wpdb;
     $queue = tnjg_table('session_queue');
     $threshold = max(1, (int) tnjg_get_option('inactivity_threshold_minutes'));
@@ -97,6 +99,7 @@ function tnjg_queue_historical_sessions(): void
         return;
     }
 
+    tnjg_maybe_upgrade_graph_schema();
     tnjg_refresh_session_queue(max(1, (int) tnjg_get_option('inactivity_threshold_minutes')));
     tnjg_update_status(array(
         'last_run_at' => current_time('mysql', true),
@@ -188,19 +191,19 @@ function tnjg_process_single_session(int $session_id): bool
 
     try {
         foreach ($views as $position => $anchor) {
-            tnjg_add_hop_aggregates($anchor, 'landing', $landing, $session);
-            tnjg_add_hop_aggregates($anchor, 'this', $anchor, $session);
-            tnjg_add_hop_aggregates($anchor, 'last', $last, $session);
+            tnjg_add_hop_aggregates($anchor, 'landing', $landing, $session, $position, 0);
+            tnjg_add_hop_aggregates($anchor, 'this', $anchor, $session, $position, $position);
+            tnjg_add_hop_aggregates($anchor, 'last', $last, $session, $position, count($views) - 1);
 
             for ($offset = 1; $offset <= $max_prior; $offset++) {
                 if (isset($views[$position - $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '-' . $offset, $views[$position - $offset], $session);
+                    tnjg_add_hop_aggregates($anchor, '-' . $offset, $views[$position - $offset], $session, $position, $position - $offset);
                 }
             }
 
             for ($offset = 1; $offset <= $max_next; $offset++) {
                 if (isset($views[$position + $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '+' . $offset, $views[$position + $offset], $session);
+                    tnjg_add_hop_aggregates($anchor, '+' . $offset, $views[$position + $offset], $session, $position, $position + $offset);
                 }
             }
         }
@@ -236,7 +239,7 @@ function tnjg_fetch_session_views(int $session_id): array
     $referrer_label_select = tnjg_referrer_select($referrers, 'label');
     $referrer_url_select = tnjg_referrer_select($referrers, 'url');
 
-    return $wpdb->get_results($wpdb->prepare(
+    $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT
             v.id AS view_id,
             v.resource_id,
@@ -264,6 +267,8 @@ function tnjg_fetch_session_views(int $session_id): array
         ORDER BY v.viewed_at ASC, v.id ASC",
         $session_id
     ));
+
+    return tnjg_apply_campaign_url_fallbacks(is_array($rows) ? $rows : array());
 }
 
 function tnjg_referrer_select(string $referrers_table, string $purpose): string
@@ -292,21 +297,30 @@ function tnjg_referrer_select(string $referrers_table, string $purpose): string
 function tnjg_campaign_select(string $field): string
 {
     $campaigns = tnjg_ia_table('campaigns');
+    $legacy_column = array('source' => 'utm_source', 'medium' => 'utm_medium', 'campaign' => 'utm_campaign')[$field];
+    $expressions = array();
 
     if ('source' === $field && tnjg_table_exists(tnjg_ia_table('utm_sources')) && tnjg_column_exists($campaigns, 'utm_source_id')) {
-        return 'utm_sources.utm_source';
+        $expressions[] = 'utm_sources.utm_source';
     }
 
     if ('medium' === $field && tnjg_table_exists(tnjg_ia_table('utm_mediums')) && tnjg_column_exists($campaigns, 'utm_medium_id')) {
-        return 'utm_mediums.utm_medium';
+        $expressions[] = 'utm_mediums.utm_medium';
     }
 
     if ('campaign' === $field && tnjg_table_exists(tnjg_ia_table('utm_campaigns')) && tnjg_column_exists($campaigns, 'utm_campaign_id')) {
-        return 'utm_campaigns.utm_campaign';
+        $expressions[] = 'utm_campaigns.utm_campaign';
     }
 
-    $legacy_column = array('source' => 'utm_source', 'medium' => 'utm_medium', 'campaign' => 'utm_campaign')[$field];
-    return tnjg_column_exists($campaigns, $legacy_column) ? 'c.' . $legacy_column : "''";
+    if (tnjg_column_exists($campaigns, $legacy_column)) {
+        $expressions[] = 'c.' . $legacy_column;
+    }
+
+    if (empty($expressions)) {
+        return "''";
+    }
+
+    return count($expressions) > 1 ? 'COALESCE(' . implode(', ', $expressions) . ')' : $expressions[0];
 }
 
 function tnjg_campaign_joins(): string
@@ -329,20 +343,28 @@ function tnjg_campaign_joins(): string
     return implode("\n", $joins);
 }
 
-function tnjg_add_hop_aggregates(object $anchor, string $hop_key, object $hop, object $session): void
+function tnjg_add_hop_aggregates(object $anchor, string $hop_key, object $hop, object $session, int $anchor_position, int $hop_position): void
 {
     $anchor_id = (int) $anchor->resource_id;
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'referrer_to', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'referrer_from', tnjg_value($hop->referrer_domain, __('Direct', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_source_to', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_source_from', tnjg_value($hop->utm_source, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_channel_to', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_channel_from', tnjg_value($hop->utm_medium, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_campaign_to', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_campaign_from', tnjg_value($hop->utm_campaign, __('None', 'tn-journey-graph')), $hop, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'content_type', tnjg_value($hop->cached_type_label, __('Unknown URL', 'tn-journey-graph')), $hop, true);
     tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($session->cached_title, __('Unknown landing page', 'tn-journey-graph')), $session, true);
+    tnjg_increment_content_type_item($anchor_id, $hop_key, tnjg_value($hop->cached_type_label, __('Unknown URL', 'tn-journey-graph')), $hop);
+
+    if (0 === $anchor_position) {
+        tnjg_increment_session_source_items($anchor_id, $hop_key, 'to', $session);
+    }
+
+    if ($hop_position < $anchor_position) {
+        tnjg_increment_session_source_items($anchor_id, $hop_key, 'from', $session);
+    }
+}
+
+function tnjg_increment_session_source_items(int $anchor_id, string $hop_key, string $direction, object $session): void
+{
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'referrer_' . $direction, tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')), null, false);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_source_' . $direction, tnjg_value($session->utm_source, __('None', 'tn-journey-graph')), null, false);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_channel_' . $direction, tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')), null, false);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_campaign_' . $direction, tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')), null, false);
 }
 
 function tnjg_value($value, string $fallback): string
@@ -374,6 +396,99 @@ function tnjg_increment_graph_item(int $anchor_id, string $hop_key, string $pane
         $object_type,
         $object_id,
         $object ? wp_json_encode(array('resource_id' => (int) $object->resource_id, 'view_id' => (int) $object->view_id)) : null
+    ));
+}
+
+function tnjg_increment_content_type_item(int $anchor_id, string $hop_key, string $label, object $object): void
+{
+    global $wpdb;
+    $graph = tnjg_table('journey_graph');
+    $object_type = tnjg_object_type($object);
+    $item_key = md5('content_type|' . $label);
+
+    $wpdb->query($wpdb->prepare(
+        "INSERT INTO {$graph}
+            (anchor_resource_id, hop_key, panel_key, item_key, item_label, item_count, item_url, object_type, object_id, metadata, updated_at)
+        VALUES (%d, %s, 'content_type', %s, %s, 1, NULL, %s, NULL, NULL, UTC_TIMESTAMP())
+        ON DUPLICATE KEY UPDATE item_count = item_count + 1, updated_at = UTC_TIMESTAMP()",
+        $anchor_id,
+        $hop_key,
+        $item_key,
+        sanitize_text_field($label),
+        $object_type
+    ));
+}
+
+function tnjg_apply_campaign_url_fallbacks(array $rows): array
+{
+    if (empty($rows)) {
+        return $rows;
+    }
+
+    $landing_url = (string) ($rows[0]->cached_url ?? '');
+    $params = tnjg_utm_params_from_url($landing_url);
+
+    if (empty($params)) {
+        return $rows;
+    }
+
+    foreach ($rows as $row) {
+        if (empty($row->utm_source) && !empty($params['utm_source'])) {
+            $row->utm_source = $params['utm_source'];
+        }
+
+        if (empty($row->utm_medium) && !empty($params['utm_medium'])) {
+            $row->utm_medium = $params['utm_medium'];
+        }
+
+        if (empty($row->utm_campaign) && !empty($params['utm_campaign'])) {
+            $row->utm_campaign = $params['utm_campaign'];
+        }
+    }
+
+    return $rows;
+}
+
+function tnjg_utm_params_from_url(string $url): array
+{
+    $query = wp_parse_url($url, PHP_URL_QUERY);
+    if (!$query) {
+        return array();
+    }
+
+    parse_str($query, $params);
+    return array_filter(array(
+        'utm_source' => isset($params['utm_source']) ? sanitize_text_field((string) $params['utm_source']) : '',
+        'utm_medium' => isset($params['utm_medium']) ? sanitize_text_field((string) $params['utm_medium']) : '',
+        'utm_campaign' => isset($params['utm_campaign']) ? sanitize_text_field((string) $params['utm_campaign']) : '',
+    ));
+}
+
+function tnjg_maybe_upgrade_graph_schema(): void
+{
+    if ((string) get_option('tnjg_graph_schema_version', '') === (string) TNJG_GRAPH_SCHEMA_VERSION) {
+        return;
+    }
+
+    global $wpdb;
+    $graph = tnjg_table('journey_graph');
+    $queue = tnjg_table('session_queue');
+
+    if (tnjg_table_exists($graph)) {
+        $wpdb->query("TRUNCATE TABLE {$graph}");
+    }
+
+    if (tnjg_table_exists($queue)) {
+        $wpdb->query("TRUNCATE TABLE {$queue}");
+    }
+
+    update_option('tnjg_graph_schema_version', TNJG_GRAPH_SCHEMA_VERSION, false);
+    tnjg_update_status(array(
+        'last_processed_at' => '',
+        'status' => 'queued',
+        'message' => __('Journey aggregates were reset for the latest graph model and historical sessions will be reprocessed.', 'tn-journey-graph'),
+        'processed_sessions' => 0,
+        'queue_counts' => array('open' => 0, 'ready' => 0, 'processed' => 0, 'skipped' => 0),
     ));
 }
 
