@@ -382,13 +382,15 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
     $hop_key = tnjg_offset_key($offset);
     $landing = $views[0];
     $exit = $views[count($views) - 1];
+    $landing_subject = $offset >= 0 ? $anchor : $landing;
+    $exit_subject = $offset <= 0 ? $anchor : $exit;
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing, true);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing_subject->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing_subject, true);
     tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
     tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
     tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
     tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
-    tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing));
+    tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing_subject));
 
     foreach (tnjg_before_range($offset, $anchor_position) as $position) {
         if (isset($views[$position])) {
@@ -413,8 +415,8 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
         }
     }
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit, true);
-    tnjg_increment_label_item($anchor_id, $hop_key, 'exit_content_types', tnjg_value($exit->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($exit));
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit_subject->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit_subject, true);
+    tnjg_increment_label_item($anchor_id, $hop_key, 'exit_content_types', tnjg_value($exit_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($exit_subject));
 }
 
 function tnjg_offset_key(int $offset): string

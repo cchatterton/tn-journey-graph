@@ -2,6 +2,13 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.12 - 2026-06-17
+
+- Added directional collapse for LANDING and EXIT groups around hop 0.
+- LANDING panels now resolve to the current page for hop 0 and positive hops.
+- EXIT panels now resolve to the current page for hop 0 and negative hops.
+- Reset graph aggregates for the directional landing/exit model.
+
 ## 0.1.11 - 2026-06-17
 
 - Reworked hop tabs to positional keys only and removed visible counts from tabs.
