@@ -2,6 +2,11 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.3 - 2026-06-16
+
+- Changed the plugin header URI to the latest GitHub release page for inactive-plugin self-serve updates.
+- Added the WordPress `Update URI` header for GitHub update identity.
+
 ## 0.1.2 - 2026-06-16
 
 - Fixed journey processing against current Independent Analytics referrer columns.

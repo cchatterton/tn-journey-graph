@@ -1,11 +1,12 @@
 <?php
 /**
  * Plugin Name: Techn Journey Graph
- * Plugin URI: https://github.com/cchatterton/tn-journey-graph
+ * Plugin URI: https://github.com/cchatterton/tn-journey-graph/releases/latest
  * Description: Front-end journey exploration for authorised users, powered by completed Independent Analytics sessions.
- * Version: 0.1.2
+ * Version: 0.1.3
  * Requires at least: 6.0
  * Requires PHP: 8.1
+ * Update URI: https://github.com/cchatterton/tn-journey-graph
  * Author: Techn
  * Author URI: https://techn.com.au
  * Text Domain: tn-journey-graph
@@ -15,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TNJG_VERSION', '0.1.2');
+define('TNJG_VERSION', '0.1.3');
 define('TNJG_PLUGIN_FILE', __FILE__);
 define('TNJG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TNJG_PLUGIN_URL', plugin_dir_url(__FILE__));
