@@ -17,33 +17,16 @@ function tnjg_process_sessions(): void
 
     global $wpdb;
     $queue = tnjg_table('session_queue');
-    $sessions = tnjg_ia_table('sessions');
-    $views = tnjg_ia_table('views');
     $threshold = max(1, (int) tnjg_get_option('inactivity_threshold_minutes'));
+    $batch_size = max(1, min(1000, (int) tnjg_get_option('processing_batch_size')));
     $now = current_time('mysql', true);
 
-    $wpdb->query(
-        "INSERT INTO {$queue} (ia_session_id, last_activity_at, status, created_at, updated_at)
-        SELECT s.session_id, COALESCE(MAX(v.viewed_at), s.ended_at, s.created_at), 'open', UTC_TIMESTAMP(), UTC_TIMESTAMP()
-        FROM {$sessions} s
-        LEFT JOIN {$views} v ON v.session_id = s.session_id
-        WHERE s.session_id IS NOT NULL
-        GROUP BY s.session_id
-        ON DUPLICATE KEY UPDATE
-            last_activity_at = VALUES(last_activity_at),
-            updated_at = UTC_TIMESTAMP()"
-    );
+    tnjg_refresh_session_queue($threshold);
 
-    $wpdb->query($wpdb->prepare(
-        "UPDATE {$queue} q
-        JOIN {$sessions} s ON s.session_id = q.ia_session_id
-        SET q.status = 'ready', q.updated_at = UTC_TIMESTAMP()
-        WHERE q.status = 'open'
-            AND (s.ended_at IS NOT NULL OR q.last_activity_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d MINUTE))",
-        $threshold
+    $session_ids = $wpdb->get_col($wpdb->prepare(
+        "SELECT ia_session_id FROM {$queue} WHERE status = 'ready' ORDER BY last_activity_at ASC LIMIT %d",
+        $batch_size
     ));
-
-    $session_ids = $wpdb->get_col("SELECT ia_session_id FROM {$queue} WHERE status = 'ready' ORDER BY last_activity_at ASC LIMIT 100");
     $processed = 0;
 
     foreach ($session_ids as $session_id) {
@@ -60,16 +43,107 @@ function tnjg_process_sessions(): void
         }
     }
 
+    $queue_counts = tnjg_queue_counts();
     $status = $processed > 0 ? 'ok' : 'idle';
     tnjg_update_status(array(
         'last_run_at' => $now,
         'last_processed_at' => $processed > 0 ? $now : tnjg_status()['last_processed_at'],
         'status' => $status,
         'message' => $processed > 0
-            ? sprintf(__('Processed %d completed sessions.', 'tn-journey-graph'), $processed)
-            : __('No completed sessions were ready to process.', 'tn-journey-graph'),
+            ? sprintf(
+                __('Processed %1$d completed sessions. Queue: %2$d open, %3$d ready, %4$d processed.', 'tn-journey-graph'),
+                $processed,
+                (int) ($queue_counts['open'] ?? 0),
+                (int) ($queue_counts['ready'] ?? 0),
+                (int) ($queue_counts['processed'] ?? 0)
+            )
+            : sprintf(
+                __('No completed sessions were ready to process. Queue: %1$d open, %2$d ready, %3$d processed.', 'tn-journey-graph'),
+                (int) ($queue_counts['open'] ?? 0),
+                (int) ($queue_counts['ready'] ?? 0),
+                (int) ($queue_counts['processed'] ?? 0)
+            ),
         'processed_sessions' => (int) tnjg_status()['processed_sessions'] + $processed,
+        'queue_counts' => $queue_counts,
     ));
+}
+
+function tnjg_queue_historical_sessions(): void
+{
+    if (!tnjg_independent_analytics_ready()) {
+        return;
+    }
+
+    tnjg_refresh_session_queue(max(1, (int) tnjg_get_option('inactivity_threshold_minutes')));
+    tnjg_update_status(array(
+        'last_run_at' => current_time('mysql', true),
+        'status' => 'queued',
+        'message' => __('Historical Independent Analytics sessions have been queued for journey processing.', 'tn-journey-graph'),
+        'queue_counts' => tnjg_queue_counts(),
+    ));
+}
+
+function tnjg_refresh_session_queue(int $threshold): void
+{
+    global $wpdb;
+    $queue = tnjg_table('session_queue');
+    $sessions = tnjg_ia_table('sessions');
+    $views = tnjg_ia_table('views');
+
+    $wpdb->query($wpdb->prepare(
+        "INSERT INTO {$queue} (ia_session_id, last_activity_at, status, created_at, updated_at)
+        SELECT
+            s.session_id,
+            COALESCE(s.ended_at, MAX(v.viewed_at), s.created_at) AS last_activity_at,
+            CASE
+                WHEN s.ended_at IS NOT NULL THEN 'ready'
+                WHEN COALESCE(MAX(v.viewed_at), s.created_at) < DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d MINUTE) THEN 'ready'
+                ELSE 'open'
+            END AS status,
+            UTC_TIMESTAMP(),
+            UTC_TIMESTAMP()
+        FROM {$sessions} s
+        LEFT JOIN {$views} v ON v.session_id = s.session_id
+        LEFT JOIN {$queue} q ON q.ia_session_id = s.session_id
+        WHERE s.session_id IS NOT NULL
+            AND (q.status IS NULL OR q.status != 'processed')
+        GROUP BY s.session_id, s.ended_at, s.created_at
+        ON DUPLICATE KEY UPDATE
+            last_activity_at = VALUES(last_activity_at),
+            status = IF({$queue}.status = 'processed', {$queue}.status, VALUES(status)),
+            updated_at = UTC_TIMESTAMP()",
+        $threshold
+    ));
+
+    $wpdb->query($wpdb->prepare(
+        "UPDATE {$queue} q
+        JOIN (
+            SELECT
+                s.session_id,
+                COALESCE(s.ended_at, MAX(v.viewed_at), s.created_at) AS last_activity_at
+            FROM {$sessions} s
+            LEFT JOIN {$views} v ON v.session_id = s.session_id
+            GROUP BY s.session_id, s.ended_at, s.created_at
+        ) latest ON latest.session_id = q.ia_session_id
+        SET q.status = 'ready', q.last_activity_at = latest.last_activity_at, q.updated_at = UTC_TIMESTAMP()
+        WHERE q.status = 'open'
+            AND latest.last_activity_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d MINUTE)",
+        $threshold
+    ));
+}
+
+function tnjg_queue_counts(): array
+{
+    global $wpdb;
+    $queue = tnjg_table('session_queue');
+    $rows = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$queue} GROUP BY status");
+    $counts = array('open' => 0, 'ready' => 0, 'processed' => 0);
+
+    foreach ($rows as $row) {
+        $counts[(string) $row->status] = (int) $row->total;
+    }
+
+    return $counts;
 }
 
 function tnjg_process_single_session(int $session_id): bool

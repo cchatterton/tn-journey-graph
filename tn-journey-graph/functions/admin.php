@@ -38,6 +38,7 @@ function tnjg_sanitize_options(array $input): array
         'enabled' => empty($input['enabled']) ? 0 : 1,
         'required_capability' => sanitize_key((string) ($input['required_capability'] ?? $defaults['required_capability'])),
         'processing_frequency' => in_array($frequency, array('tnjg_every_minute', 'hourly', 'twicedaily', 'daily'), true) ? $frequency : 'hourly',
+        'processing_batch_size' => max(1, min(1000, absint($input['processing_batch_size'] ?? $defaults['processing_batch_size']))),
         'inactivity_threshold_minutes' => max(1, absint($input['inactivity_threshold_minutes'] ?? $defaults['inactivity_threshold_minutes'])),
         'max_prior_hops' => max(0, min(20, absint($input['max_prior_hops'] ?? $defaults['max_prior_hops']))),
         'max_next_hops' => max(0, min(20, absint($input['max_next_hops'] ?? $defaults['max_next_hops']))),
@@ -67,6 +68,7 @@ function tnjg_render_admin_page(): void
 
     $options = tnjg_get_options();
     $status = tnjg_status();
+    $queue_counts = is_array($status['queue_counts'] ?? null) ? $status['queue_counts'] : array();
     $post_types = get_post_types(array('public' => true), 'objects');
     ?>
     <div class="wrap">
@@ -95,6 +97,7 @@ function tnjg_render_admin_page(): void
                         </select>
                     </td>
                 </tr>
+                <?php tnjg_number_row('processing_batch_size', __('Processing batch size', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('inactivity_threshold_minutes', __('Inactivity threshold minutes', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('max_prior_hops', __('Maximum prior hops', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('max_next_hops', __('Maximum next hops', 'tn-journey-graph'), $options); ?>
@@ -123,6 +126,7 @@ function tnjg_render_admin_page(): void
                 <tr><th><?php echo esc_html__('Last run', 'tn-journey-graph'); ?></th><td><?php echo esc_html(tnjg_format_datetime($status['last_run_at'])); ?></td></tr>
                 <tr><th><?php echo esc_html__('Last processed', 'tn-journey-graph'); ?></th><td><?php echo esc_html(tnjg_format_datetime($status['last_processed_at'])); ?></td></tr>
                 <tr><th><?php echo esc_html__('Processed sessions', 'tn-journey-graph'); ?></th><td><?php echo esc_html((string) $status['processed_sessions']); ?></td></tr>
+                <tr><th><?php echo esc_html__('Queued sessions', 'tn-journey-graph'); ?></th><td><?php echo esc_html(sprintf(__('Open: %1$d, Ready: %2$d, Processed: %3$d', 'tn-journey-graph'), (int) ($queue_counts['open'] ?? 0), (int) ($queue_counts['ready'] ?? 0), (int) ($queue_counts['processed'] ?? 0))); ?></td></tr>
             </tbody>
         </table>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:16px;">

@@ -10,6 +10,7 @@ function tnjg_default_options(): array
         'enabled' => 1,
         'required_capability' => 'manage_options',
         'processing_frequency' => 'hourly',
+        'processing_batch_size' => 100,
         'inactivity_threshold_minutes' => 30,
         'max_prior_hops' => 5,
         'max_next_hops' => 5,
@@ -88,6 +89,7 @@ function tnjg_status(): array
         'status' => 'not_run',
         'message' => __('Journey data has not been processed yet.', 'tn-journey-graph'),
         'processed_sessions' => 0,
+        'queue_counts' => array('open' => 0, 'ready' => 0, 'processed' => 0),
     ));
 }
 

@@ -21,6 +21,7 @@ function tnjg_activate(): void
 {
     add_option('tnjg_options', tnjg_default_options(), '', false);
     tnjg_create_tables();
+    tnjg_queue_historical_sessions();
     tnjg_schedule_processing();
 }
 
