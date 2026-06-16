@@ -126,7 +126,7 @@ function tnjg_render_admin_page(): void
                 <tr><th><?php echo esc_html__('Last run', 'tn-journey-graph'); ?></th><td><?php echo esc_html(tnjg_format_datetime($status['last_run_at'])); ?></td></tr>
                 <tr><th><?php echo esc_html__('Last processed', 'tn-journey-graph'); ?></th><td><?php echo esc_html(tnjg_format_datetime($status['last_processed_at'])); ?></td></tr>
                 <tr><th><?php echo esc_html__('Processed sessions', 'tn-journey-graph'); ?></th><td><?php echo esc_html((string) $status['processed_sessions']); ?></td></tr>
-                <tr><th><?php echo esc_html__('Queued sessions', 'tn-journey-graph'); ?></th><td><?php echo esc_html(sprintf(__('Open: %1$d, Ready: %2$d, Processed: %3$d', 'tn-journey-graph'), (int) ($queue_counts['open'] ?? 0), (int) ($queue_counts['ready'] ?? 0), (int) ($queue_counts['processed'] ?? 0))); ?></td></tr>
+                <tr><th><?php echo esc_html__('Queued sessions', 'tn-journey-graph'); ?></th><td><?php echo esc_html(sprintf(__('Open: %1$d, Ready: %2$d, Processed: %3$d, Skipped: %4$d', 'tn-journey-graph'), (int) ($queue_counts['open'] ?? 0), (int) ($queue_counts['ready'] ?? 0), (int) ($queue_counts['processed'] ?? 0), (int) ($queue_counts['skipped'] ?? 0))); ?></td></tr>
             </tbody>
         </table>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:16px;">

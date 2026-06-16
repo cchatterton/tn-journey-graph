@@ -2,6 +2,12 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.2 - 2026-06-16
+
+- Fixed journey processing against current Independent Analytics referrer columns.
+- Added a skipped queue state so unprocessable sessions cannot block later ready sessions.
+- Added skipped queue counts to processing status.
+
 ## 0.1.1 - 2026-06-16
 
 - Added historical session queueing for existing Independent Analytics sites.

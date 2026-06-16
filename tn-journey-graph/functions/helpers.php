@@ -89,7 +89,7 @@ function tnjg_status(): array
         'status' => 'not_run',
         'message' => __('Journey data has not been processed yet.', 'tn-journey-graph'),
         'processed_sessions' => 0,
-        'queue_counts' => array('open' => 0, 'ready' => 0, 'processed' => 0),
+        'queue_counts' => array('open' => 0, 'ready' => 0, 'processed' => 0, 'skipped' => 0),
     ));
 }
 

@@ -28,10 +28,16 @@ function tnjg_process_sessions(): void
         $batch_size
     ));
     $processed = 0;
+    $skipped = 0;
+    $failed = 0;
 
     foreach ($session_ids as $session_id) {
         $session_id = (int) $session_id;
-        if ($session_id > 0 && tnjg_process_single_session($session_id)) {
+        if ($session_id <= 0) {
+            continue;
+        }
+
+        if (tnjg_process_single_session($session_id)) {
             $processed++;
             $wpdb->update(
                 $queue,
@@ -40,11 +46,25 @@ function tnjg_process_sessions(): void
                 array('%s', '%s', '%s'),
                 array('%d')
             );
+        } else {
+            if (!empty($wpdb->last_error)) {
+                $failed++;
+                break;
+            }
+
+            $skipped++;
+            $wpdb->update(
+                $queue,
+                array('status' => 'skipped', 'processed_at' => $now, 'updated_at' => $now),
+                array('ia_session_id' => $session_id),
+                array('%s', '%s', '%s'),
+                array('%d')
+            );
         }
     }
 
     $queue_counts = tnjg_queue_counts();
-    $status = $processed > 0 ? 'ok' : 'idle';
+    $status = $failed > 0 ? 'failed' : ($processed > 0 ? 'ok' : 'idle');
     tnjg_update_status(array(
         'last_run_at' => $now,
         'last_processed_at' => $processed > 0 ? $now : tnjg_status()['last_processed_at'],
@@ -58,10 +78,13 @@ function tnjg_process_sessions(): void
                 (int) ($queue_counts['processed'] ?? 0)
             )
             : sprintf(
-                __('No completed sessions were ready to process. Queue: %1$d open, %2$d ready, %3$d processed.', 'tn-journey-graph'),
+                $failed > 0
+                    ? __('Processing stopped after a database error. Queue: %1$d open, %2$d ready, %3$d processed, %4$d skipped.', 'tn-journey-graph')
+                    : __('No sessions were processed. Queue: %1$d open, %2$d ready, %3$d processed, %4$d skipped.', 'tn-journey-graph'),
                 (int) ($queue_counts['open'] ?? 0),
                 (int) ($queue_counts['ready'] ?? 0),
-                (int) ($queue_counts['processed'] ?? 0)
+                (int) ($queue_counts['processed'] ?? 0),
+                (int) ($queue_counts['skipped'] ?? 0)
             ),
         'processed_sessions' => (int) tnjg_status()['processed_sessions'] + $processed,
         'queue_counts' => $queue_counts,
@@ -137,7 +160,7 @@ function tnjg_queue_counts(): array
     global $wpdb;
     $queue = tnjg_table('session_queue');
     $rows = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$queue} GROUP BY status");
-    $counts = array('open' => 0, 'ready' => 0, 'processed' => 0);
+    $counts = array('open' => 0, 'ready' => 0, 'processed' => 0, 'skipped' => 0);
 
     foreach ($rows as $row) {
         $counts[(string) $row->status] = (int) $row->total;
@@ -198,6 +221,8 @@ function tnjg_process_single_session(int $session_id): bool
 function tnjg_fetch_session_views(int $session_id): array
 {
     global $wpdb;
+    $wpdb->last_error = '';
+
     $views = tnjg_ia_table('views');
     $resources = tnjg_ia_table('resources');
     $sessions = tnjg_ia_table('sessions');
@@ -208,7 +233,8 @@ function tnjg_fetch_session_views(int $session_id): array
     $campaign_select = tnjg_campaign_select('campaign');
     $joins = tnjg_campaign_joins();
 
-    $referrer_select = tnjg_column_exists($referrers, 'domain') ? 'ref.domain' : 'ref.url';
+    $referrer_label_select = tnjg_referrer_select($referrers, 'label');
+    $referrer_url_select = tnjg_referrer_select($referrers, 'url');
 
     return $wpdb->get_results($wpdb->prepare(
         "SELECT
@@ -223,8 +249,8 @@ function tnjg_fetch_session_views(int $session_id): array
             r.resource,
             s.session_id,
             s.initial_view_id,
-            {$referrer_select} AS referrer_domain,
-            ref.url AS referrer_url,
+            {$referrer_label_select} AS referrer_domain,
+            {$referrer_url_select} AS referrer_url,
             {$source_select} AS utm_source,
             {$medium_select} AS utm_medium,
             {$campaign_select} AS utm_campaign
@@ -238,6 +264,29 @@ function tnjg_fetch_session_views(int $session_id): array
         ORDER BY v.viewed_at ASC, v.id ASC",
         $session_id
     ));
+}
+
+function tnjg_referrer_select(string $referrers_table, string $purpose): string
+{
+    if ('label' === $purpose) {
+        if (tnjg_column_exists($referrers_table, 'referrer')) {
+            return 'ref.referrer';
+        }
+
+        if (tnjg_column_exists($referrers_table, 'domain')) {
+            return 'ref.domain';
+        }
+    }
+
+    if (tnjg_column_exists($referrers_table, 'url')) {
+        return 'ref.url';
+    }
+
+    if (tnjg_column_exists($referrers_table, 'domain')) {
+        return 'ref.domain';
+    }
+
+    return "''";
 }
 
 function tnjg_campaign_select(string $field): string
