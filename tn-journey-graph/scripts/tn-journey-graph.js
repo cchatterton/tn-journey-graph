@@ -89,7 +89,7 @@
 
     content.innerHTML = shellMarkup(`
       ${controlsMarkup(state.data.hops)}
-      <div class="tnjg-grid">${state.data.panels.map(panelMarkup).join("")}</div>
+      <div class="tnjg-flow">${(state.data.groups || []).map(groupMarkup).join("")}</div>
     `);
     bindPanelEvents();
   }
@@ -99,17 +99,29 @@
   }
 
   function controlsMarkup(hops) {
+    const max = Math.max(...hops.map((hop) => Number(hop.count) || 0), 1);
     return `
       <div class="tnjg-tabs" role="tablist">
         ${hops
           .map((hop) => {
             const selected = hop.key === state.hop;
-            return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}">${escapeHtml(hop.label)} <span>${number(hop.count)}</span></button>`;
+            const intensity = Math.max(0.16, Math.min(1, (Number(hop.count) || 0) / max)).toFixed(2);
+            return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}" title="${escapeAttr(number(hop.count))} journeys" style="--tnjg-intensity:${intensity}">${escapeHtml(hop.label)}</button>`;
           })
           .join("")}
         ${filtersMarkup()}
         ${closeButtonMarkup()}
       </div>
+    `;
+  }
+
+  function groupMarkup(group) {
+    const panels = group.panels || [];
+    return `
+      <section class="tnjg-group tnjg-group--${escapeAttr(group.key || "")}">
+        <h2>${escapeHtml(group.title || "")}</h2>
+        <div class="tnjg-grid">${panels.map(panelMarkup).join("")}</div>
+      </section>
     `;
   }
 
@@ -147,7 +159,7 @@
     const items = panelData.items || [];
     const body = items.length
       ? items.map(itemMarkup).join("")
-      : `<div class="tnjg-empty-row">No matching data</div>`;
+      : `<div class="tnjg-empty-row">No data</div>`;
 
     return `
       <article class="tnjg-card">
@@ -163,12 +175,12 @@
     const percent = Math.max(0, Math.min(100, Number(item.percentage) || 0));
     const label = escapeHtml(item.label || "Unknown");
     const labelMarkup = item.url ? `<a href="${escapeAttr(item.url)}">${label}</a>` : `<span>${label}</span>`;
+    const title = `${item.label || "Unknown"} — ${number(item.count)} (${percent}%)`;
 
     return `
-      <div class="tnjg-bar-row">
+      <div class="tnjg-bar-row" title="${escapeAttr(title)}">
         <div class="tnjg-bar-row__top">
           ${labelMarkup}
-          <strong>${percent}%</strong>
         </div>
         <div class="tnjg-bar-row__track">
           <span style="width:${percent}%"></span>

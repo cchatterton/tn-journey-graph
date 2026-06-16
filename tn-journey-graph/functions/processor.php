@@ -182,8 +182,6 @@ function tnjg_process_single_session(int $session_id): bool
     }
 
     $session = $views[0];
-    $landing = $views[0];
-    $last = $views[count($views) - 1];
     $max_prior = max(0, (int) tnjg_get_option('max_prior_hops'));
     $max_next = max(0, (int) tnjg_get_option('max_next_hops'));
 
@@ -191,19 +189,17 @@ function tnjg_process_single_session(int $session_id): bool
 
     try {
         foreach ($views as $position => $anchor) {
-            tnjg_add_hop_aggregates($anchor, 'landing', $landing, $session, $last, $position, 0);
-            tnjg_add_hop_aggregates($anchor, 'this', $anchor, $session, $last, $position, $position);
-            tnjg_add_hop_aggregates($anchor, 'last', $last, $session, $last, $position, count($views) - 1);
+            tnjg_add_hop_aggregates($anchor, 0, $views, $session, $position);
 
             for ($offset = 1; $offset <= $max_prior; $offset++) {
                 if (isset($views[$position - $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '-' . $offset, $views[$position - $offset], $session, $last, $position, $position - $offset);
+                    tnjg_add_hop_aggregates($anchor, -$offset, $views, $session, $position);
                 }
             }
 
             for ($offset = 1; $offset <= $max_next; $offset++) {
                 if (isset($views[$position + $offset])) {
-                    tnjg_add_hop_aggregates($anchor, '+' . $offset, $views[$position + $offset], $session, $last, $position, $position + $offset);
+                    tnjg_add_hop_aggregates($anchor, $offset, $views, $session, $position);
                 }
             }
         }
@@ -235,6 +231,8 @@ function tnjg_fetch_session_views(int $session_id): array
     $medium_select = tnjg_campaign_select('medium');
     $campaign_select = tnjg_campaign_select('campaign');
     $joins = tnjg_campaign_joins();
+    $campaign_join = tnjg_table_exists($campaigns) ? 'LEFT JOIN ' . $campaigns . ' c ON c.campaign_id = ' . tnjg_campaign_id_sql() : '';
+    $referrer_join = tnjg_table_exists($referrers) ? 'LEFT JOIN ' . $referrers . ' ref ON ref.id = s.referrer_id' : '';
 
     $referrer_label_select = tnjg_referrer_select($referrers, 'label');
     $referrer_url_select = tnjg_referrer_select($referrers, 'url');
@@ -260,8 +258,8 @@ function tnjg_fetch_session_views(int $session_id): array
         FROM {$views} v
         JOIN {$resources} r ON r.id = v.resource_id
         JOIN {$sessions} s ON s.session_id = v.session_id
-        LEFT JOIN {$referrers} ref ON ref.id = s.referrer_id
-        LEFT JOIN {$campaigns} c ON c.campaign_id = s.campaign_id
+        {$referrer_join}
+        {$campaign_join}
         {$joins}
         WHERE v.session_id = %d
         ORDER BY v.viewed_at ASC, v.id ASC",
@@ -273,6 +271,10 @@ function tnjg_fetch_session_views(int $session_id): array
 
 function tnjg_referrer_select(string $referrers_table, string $purpose): string
 {
+    if (!tnjg_table_exists($referrers_table)) {
+        return "''";
+    }
+
     if ('label' === $purpose) {
         if (tnjg_column_exists($referrers_table, 'referrer')) {
             return 'ref.referrer';
@@ -299,6 +301,10 @@ function tnjg_campaign_select(string $field): string
     $campaigns = tnjg_ia_table('campaigns');
     $legacy_column = array('source' => 'utm_source', 'medium' => 'utm_medium', 'campaign' => 'utm_campaign')[$field];
     $expressions = array();
+
+    if (!tnjg_table_exists($campaigns)) {
+        return "''";
+    }
 
     if ('source' === $field && tnjg_table_exists(tnjg_ia_table('utm_sources')) && tnjg_column_exists($campaigns, 'utm_source_id')) {
         $expressions[] = 'utm_sources.utm_source';
@@ -328,6 +334,10 @@ function tnjg_campaign_joins(): string
     $campaigns = tnjg_ia_table('campaigns');
     $joins = array();
 
+    if (!tnjg_table_exists($campaigns)) {
+        return '';
+    }
+
     if (tnjg_table_exists(tnjg_ia_table('utm_sources')) && tnjg_column_exists($campaigns, 'utm_source_id')) {
         $joins[] = 'LEFT JOIN ' . tnjg_ia_table('utm_sources') . ' utm_sources ON utm_sources.id = c.utm_source_id';
     }
@@ -343,26 +353,100 @@ function tnjg_campaign_joins(): string
     return implode("\n", $joins);
 }
 
-function tnjg_add_hop_aggregates(object $anchor, string $hop_key, object $hop, object $session, object $exit, int $anchor_position, int $hop_position): void
+function tnjg_campaign_id_sql(): string
 {
-    $anchor_id = (int) $anchor->resource_id;
+    $sessions = tnjg_ia_table('sessions');
+    $views = tnjg_ia_table('views');
 
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($hop->cached_title, __('Unknown landing page', 'tn-journey-graph')), $hop, true);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit, true);
-    tnjg_increment_content_type_item($anchor_id, $hop_key, tnjg_value($hop->cached_type_label, __('Unknown URL', 'tn-journey-graph')), $hop);
-    tnjg_increment_session_source_items($anchor_id, $hop_key, 'to', $session);
-
-    if ($hop_position <= $anchor_position) {
-        tnjg_increment_session_source_items($anchor_id, $hop_key, 'from', $session);
+    if (tnjg_column_exists($sessions, 'campaign_id') && tnjg_column_exists($views, 'campaign_id')) {
+        return 'COALESCE(s.campaign_id, v.campaign_id)';
     }
+
+    if (tnjg_column_exists($sessions, 'campaign_id')) {
+        return 's.campaign_id';
+    }
+
+    return tnjg_column_exists($views, 'campaign_id') ? 'v.campaign_id' : 'NULL';
 }
 
-function tnjg_increment_session_source_items(int $anchor_id, string $hop_key, string $direction, object $session): void
+function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, object $session, int $anchor_position): void
 {
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'referrer_' . $direction, tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')), null, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_source_' . $direction, tnjg_value($session->utm_source, __('None', 'tn-journey-graph')), null, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_channel_' . $direction, tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')), null, false);
-    tnjg_increment_graph_item($anchor_id, $hop_key, 'utm_campaign_' . $direction, tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')), null, false);
+    $anchor_id = (int) $anchor->resource_id;
+    $hop_position = $anchor_position + $offset;
+    $hop = $views[$hop_position] ?? null;
+
+    if (!$hop) {
+        return;
+    }
+
+    $hop_key = tnjg_offset_key($offset);
+    $landing = $views[0];
+    $exit = $views[count($views) - 1];
+
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing, true);
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
+    tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing));
+
+    foreach (tnjg_before_range($offset, $anchor_position) as $position) {
+        if (isset($views[$position])) {
+            $before = $views[$position];
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'before_pages', tnjg_value($before->cached_title, __('Unknown page', 'tn-journey-graph')), $before, true);
+            tnjg_increment_label_item($anchor_id, $hop_key, 'before_content_types', tnjg_value($before->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($before));
+        }
+    }
+
+    if (!empty(tnjg_before_range($offset, $anchor_position))) {
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
+        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
+    }
+
+    foreach (tnjg_after_range($offset, $anchor_position) as $position) {
+        if (isset($views[$position])) {
+            $after = $views[$position];
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'after_pages', tnjg_value($after->cached_title, __('Unknown page', 'tn-journey-graph')), $after, true);
+            tnjg_increment_label_item($anchor_id, $hop_key, 'after_content_types', tnjg_value($after->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($after));
+        }
+    }
+
+    tnjg_increment_graph_item($anchor_id, $hop_key, 'exit_pages', tnjg_value($exit->cached_title, __('Unknown exit page', 'tn-journey-graph')), $exit, true);
+    tnjg_increment_label_item($anchor_id, $hop_key, 'exit_content_types', tnjg_value($exit->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($exit));
+}
+
+function tnjg_offset_key(int $offset): string
+{
+    if (0 === $offset) {
+        return '0';
+    }
+
+    return $offset > 0 ? '+' . $offset : (string) $offset;
+}
+
+function tnjg_before_range(int $offset, int $anchor_position): array
+{
+    if ($anchor_position <= 0) {
+        return array();
+    }
+
+    $end = $offset < 0 ? $anchor_position + $offset : $anchor_position;
+    if ($end < 0) {
+        return array();
+    }
+
+    return range(0, $end);
+}
+
+function tnjg_after_range(int $offset, int $anchor_position): array
+{
+    if ($offset <= 0) {
+        return array();
+    }
+
+    return range($anchor_position + 1, $anchor_position + $offset);
 }
 
 function tnjg_value($value, string $fallback): string
@@ -397,20 +481,20 @@ function tnjg_increment_graph_item(int $anchor_id, string $hop_key, string $pane
     ));
 }
 
-function tnjg_increment_content_type_item(int $anchor_id, string $hop_key, string $label, object $object): void
+function tnjg_increment_label_item(int $anchor_id, string $hop_key, string $panel_key, string $label, string $object_type = ''): void
 {
     global $wpdb;
     $graph = tnjg_table('journey_graph');
-    $object_type = tnjg_object_type($object);
-    $item_key = md5('content_type|' . $label);
+    $item_key = md5($panel_key . '|' . $label . '|' . $object_type);
 
     $wpdb->query($wpdb->prepare(
         "INSERT INTO {$graph}
             (anchor_resource_id, hop_key, panel_key, item_key, item_label, item_count, item_url, object_type, object_id, metadata, updated_at)
-        VALUES (%d, %s, 'content_type', %s, %s, 1, NULL, %s, NULL, NULL, UTC_TIMESTAMP())
+        VALUES (%d, %s, %s, %s, %s, 1, NULL, %s, NULL, NULL, UTC_TIMESTAMP())
         ON DUPLICATE KEY UPDATE item_count = item_count + 1, updated_at = UTC_TIMESTAMP()",
         $anchor_id,
         $hop_key,
+        $panel_key,
         $item_key,
         sanitize_text_field($label),
         $object_type

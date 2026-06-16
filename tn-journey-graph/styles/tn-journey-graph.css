@@ -28,7 +28,7 @@
   left: 0;
   z-index: 99999;
   width: 100vw;
-  max-height: 54vh;
+  max-height: 58vh;
   background: #070b12;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.45);
@@ -48,7 +48,7 @@
   width: 100vw;
   max-width: none;
   margin: 0;
-  padding: 12px 16px 18px;
+  padding: 10px 12px 14px;
 }
 
 .tnjg-close {
@@ -74,34 +74,38 @@
   align-items: center;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 5px;
-  margin-bottom: 8px;
+  padding-bottom: 4px;
+  margin-bottom: 7px;
 }
 
 .tnjg-tab {
+  position: relative;
   flex: 0 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(118, 92, 255, calc(0.18 + (var(--tnjg-intensity, 0.2) * 0.45)));
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(118, 92, 255, calc(0.06 + (var(--tnjg-intensity, 0.2) * 0.22)));
   color: #dfe2f2;
   cursor: pointer;
   font-size: 10px;
   font-weight: 700;
   padding: 6px 8px;
+  opacity: calc(0.62 + (var(--tnjg-intensity, 0.2) * 0.38));
 }
 
-.tnjg-tab span {
-  color: #aeb4c9;
-  font-weight: 600;
+.tnjg-tab::after {
+  position: absolute;
+  right: 6px;
+  bottom: 2px;
+  left: 6px;
+  height: calc(1px + (var(--tnjg-intensity, 0.2) * 3px));
+  border-radius: 999px;
+  background: rgba(141, 115, 255, 0.9);
+  content: "";
 }
 
 .tnjg-tab--active {
   border-color: rgba(118, 92, 255, 0.9);
   background: #6f49ff;
-  color: #ffffff;
-}
-
-.tnjg-tab--active span {
   color: #ffffff;
 }
 
@@ -125,11 +129,43 @@
   font-size: 11px;
 }
 
-.tnjg-grid {
+.tnjg-flow {
   display: grid;
-  grid-template-columns: repeat(11, minmax(140px, 1fr));
+  grid-template-columns: 6fr 6fr 2fr 2fr;
   gap: 8px;
   min-width: 100%;
+}
+
+.tnjg-group {
+  min-width: 0;
+}
+
+.tnjg-group h2 {
+  margin: 0 0 5px;
+  color: #9ea6bd;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tnjg-grid {
+  display: grid;
+  gap: 6px;
+  min-width: 100%;
+}
+
+.tnjg-group--landing .tnjg-grid,
+.tnjg-group--before .tnjg-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.tnjg-group--after .tnjg-grid,
+.tnjg-group--exit .tnjg-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tnjg-card {
@@ -137,24 +173,27 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(16, 22, 34, 0.98), rgba(8, 12, 20, 0.98));
-  padding: 9px;
+  padding: 6px;
 }
 
 .tnjg-card__head {
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .tnjg-card h3 {
   margin: 0;
   color: #ffffff;
-  font-size: 11px;
-  line-height: 1.25;
+  font-size: 10px;
+  line-height: 1.15;
   letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tnjg-bar-row {
   position: relative;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 .tnjg-bar-row:first-child {
@@ -162,37 +201,31 @@
 }
 
 .tnjg-bar-row__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px;
+  display: block;
   color: #f6f7fb;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.05;
 }
 
 .tnjg-bar-row__top a,
 .tnjg-bar-row__top span {
-  min-width: 0;
+  display: block;
+  width: 100%;
   color: #f6f7fb;
-  overflow-wrap: anywhere;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tnjg-bar-row__top a:hover {
   text-decoration: underline;
 }
 
-.tnjg-bar-row__top strong {
-  color: #e8ebfb;
-  font-size: 10px;
-  white-space: nowrap;
-}
-
 .tnjg-bar-row__track {
-  height: 9px;
-  margin-top: 3px;
+  height: 11px;
+  margin-top: 2px;
   overflow: hidden;
   border-radius: 0;
   background: rgba(255, 255, 255, 0.08);
@@ -210,8 +243,11 @@
 .tnjg-empty-row,
 .tnjg-state {
   color: #aeb4c9;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tnjg-state {
@@ -236,11 +272,11 @@
   }
 
   .tnjg-grid {
-    grid-template-columns: repeat(10, minmax(150px, 1fr));
     overflow-x: auto;
   }
-
-  .tnjg-header h2 {
-    font-size: 14px;
+  
+  .tnjg-flow {
+    grid-template-columns: repeat(4, minmax(460px, 1fr));
+    overflow-x: auto;
   }
 }

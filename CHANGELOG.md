@@ -2,6 +2,17 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.11 - 2026-06-17
+
+- Reworked hop tabs to positional keys only and removed visible counts from tabs.
+- Added heatmap-style hop intensity based on relative journey volume.
+- Replaced flat cards with LANDING, BEFORE, AFTER, and EXIT grouped sections.
+- Expanded the panel model to exactly 16 reusable micro-histogram panels.
+- Changed histograms to top-five compact rows with hidden counts and percentages.
+- Added ellipsis truncation across panel titles and histogram labels.
+- Increased default prior-hop depth to seven positions.
+- Reset graph aggregates for the positional grouped panel model.
+
 ## 0.1.10 - 2026-06-16
 
 - Removed the panel header "Top x" labels.

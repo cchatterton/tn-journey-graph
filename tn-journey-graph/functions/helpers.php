@@ -12,7 +12,7 @@ function tnjg_default_options(): array
         'processing_frequency' => 'hourly',
         'processing_batch_size' => 100,
         'inactivity_threshold_minutes' => 30,
-        'max_prior_hops' => 5,
+        'max_prior_hops' => 7,
         'max_next_hops' => 5,
         'histogram_items' => 10,
         'enabled_object_types' => array('page', 'post'),
@@ -164,19 +164,59 @@ function tnjg_format_datetime(?string $mysql_datetime): string
     return wp_date(get_option('date_format') . ' ' . get_option('time_format'), $timestamp);
 }
 
-function tnjg_panel_definitions(): array
+function tnjg_panel_groups(): array
 {
     return array(
-        'landing_pages' => __('Landing Page Distribution', 'tn-journey-graph'),
-        'exit_pages' => __('Exit Page Distribution', 'tn-journey-graph'),
-        'referrer_to' => __('Referrer — To Here', 'tn-journey-graph'),
-        'referrer_from' => __('Referrer — From Here', 'tn-journey-graph'),
-        'utm_source_to' => __('UTM Source — To Here', 'tn-journey-graph'),
-        'utm_source_from' => __('UTM Source — From Here', 'tn-journey-graph'),
-        'utm_channel_to' => __('UTM Channel — To Here', 'tn-journey-graph'),
-        'utm_channel_from' => __('UTM Channel — From Here', 'tn-journey-graph'),
-        'utm_campaign_to' => __('UTM Campaign — To Here', 'tn-journey-graph'),
-        'utm_campaign_from' => __('UTM Campaign — From Here', 'tn-journey-graph'),
-        'content_type' => __('Content Type Distribution', 'tn-journey-graph'),
+        array(
+            'key' => 'landing',
+            'title' => __('LANDING', 'tn-journey-graph'),
+            'panels' => array(
+                'landing_pages' => __('Landing Pages', 'tn-journey-graph'),
+                'landing_referrers' => __('Referrers to Landing Pages', 'tn-journey-graph'),
+                'landing_utm_sources' => __('UTM Sources to These Journeys', 'tn-journey-graph'),
+                'landing_utm_channels' => __('UTM Channels to These Journeys', 'tn-journey-graph'),
+                'landing_utm_campaigns' => __('UTM Campaigns to These Journeys', 'tn-journey-graph'),
+                'landing_content_types' => __('Content Types for Landing Pages', 'tn-journey-graph'),
+            ),
+        ),
+        array(
+            'key' => 'before',
+            'title' => __('BEFORE', 'tn-journey-graph'),
+            'panels' => array(
+                'before_pages' => __('Pages Before', 'tn-journey-graph'),
+                'before_referrers' => __('Referrers to These Pages', 'tn-journey-graph'),
+                'before_utm_sources' => __('UTM Sources to These Journeys', 'tn-journey-graph'),
+                'before_utm_channels' => __('UTM Channels to These Journeys', 'tn-journey-graph'),
+                'before_utm_campaigns' => __('UTM Campaigns to These Journeys', 'tn-journey-graph'),
+                'before_content_types' => __('Content Types for These Pages', 'tn-journey-graph'),
+            ),
+        ),
+        array(
+            'key' => 'after',
+            'title' => __('AFTER', 'tn-journey-graph'),
+            'panels' => array(
+                'after_pages' => __('Pages After', 'tn-journey-graph'),
+                'after_content_types' => __('Content Types for These Pages', 'tn-journey-graph'),
+            ),
+        ),
+        array(
+            'key' => 'exit',
+            'title' => __('EXIT', 'tn-journey-graph'),
+            'panels' => array(
+                'exit_pages' => __('Exit Pages', 'tn-journey-graph'),
+                'exit_content_types' => __('Content Types for Exit Pages', 'tn-journey-graph'),
+            ),
+        ),
     );
+}
+
+function tnjg_panel_definitions(): array
+{
+    $panels = array();
+
+    foreach (tnjg_panel_groups() as $group) {
+        $panels += $group['panels'];
+    }
+
+    return $panels;
 }
