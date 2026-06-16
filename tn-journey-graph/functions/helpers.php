@@ -167,6 +167,7 @@ function tnjg_format_datetime(?string $mysql_datetime): string
 function tnjg_panel_definitions(): array
 {
     return array(
+        'landing_pages' => __('Landing Page Distribution', 'tn-journey-graph'),
         'referrer_to' => __('Referrer — To Here', 'tn-journey-graph'),
         'referrer_from' => __('Referrer — From Here', 'tn-journey-graph'),
         'utm_source_to' => __('UTM Source — To Here', 'tn-journey-graph'),
@@ -176,6 +177,5 @@ function tnjg_panel_definitions(): array
         'utm_campaign_to' => __('UTM Campaign — To Here', 'tn-journey-graph'),
         'utm_campaign_from' => __('UTM Campaign — From Here', 'tn-journey-graph'),
         'content_type' => __('Content Type Distribution', 'tn-journey-graph'),
-        'landing_pages' => __('Landing Page Distribution', 'tn-journey-graph'),
     );
 }

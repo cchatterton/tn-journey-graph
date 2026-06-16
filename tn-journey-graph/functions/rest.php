@@ -52,7 +52,7 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
     $hops = tnjg_get_hops($resource_id);
     $selected_hop = sanitize_text_field((string) $request->get_param('hop'));
     if (!$selected_hop || !isset($hops[$selected_hop])) {
-        $selected_hop = isset($hops['this']) ? 'this' : (string) array_key_first($hops);
+        $selected_hop = isset($hops['landing']) ? 'landing' : (string) array_key_first($hops);
     }
 
     return rest_ensure_response(array(

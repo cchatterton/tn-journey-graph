@@ -88,8 +88,7 @@
     }
 
     content.innerHTML = shellMarkup(`
-      ${tabsMarkup(state.data.hops)}
-      ${filtersMarkup()}
+      ${controlsMarkup(state.data.hops)}
       <div class="tnjg-grid">${state.data.panels.map(panelMarkup).join("")}</div>
     `);
     bindPanelEvents();
@@ -112,7 +111,7 @@
     `;
   }
 
-  function tabsMarkup(hops) {
+  function controlsMarkup(hops) {
     return `
       <div class="tnjg-tabs" role="tablist">
         ${hops
@@ -121,6 +120,7 @@
             return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}">${escapeHtml(hop.label)} <span>${number(hop.count)}</span></button>`;
           })
           .join("")}
+        ${filtersMarkup()}
       </div>
     `;
   }
@@ -178,7 +178,6 @@
         <div class="tnjg-bar-row__track">
           <span style="width:${percent}%"></span>
         </div>
-        <div class="tnjg-bar-row__meta">${number(item.count)}</div>
       </div>
     `;
   }

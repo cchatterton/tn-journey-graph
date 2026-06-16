@@ -2,6 +2,14 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.6 - 2026-06-16
+
+- Moved the object type filter into the hop controls row.
+- Changed the default selected hop to Landing.
+- Reordered panels to show Landing Page Distribution first.
+- Removed per-row count text below histogram bars.
+- Compacted histogram row spacing and changed bars to taller square-corner bars.
+
 ## 0.1.5 - 2026-06-16
 
 - Added a plugin-row "Check for updates" link for active admin contexts.
