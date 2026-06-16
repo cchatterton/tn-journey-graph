@@ -129,6 +129,11 @@ class TNJG_GitHub_Updater
         delete_site_transient(self::RELEASE_TRANSIENT);
         delete_site_transient(self::ERROR_TRANSIENT);
         delete_site_transient('update_plugins');
+
+        if (!function_exists('wp_update_plugins')) {
+            require_once ABSPATH . 'wp-includes/update.php';
+        }
+
         wp_update_plugins();
 
         wp_safe_redirect(add_query_arg('tnjg_checked_updates', '1', $this->plugins_page_url()));
