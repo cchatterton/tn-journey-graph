@@ -2,6 +2,13 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.5 - 2026-06-17
+
+- Restored hop 0 to the Journey Explorer tabs.
+- Replaced BEFORE and AFTER groups with an exact-hop HERE group.
+- Shortened panel titles across LANDING, HERE, and EXITS.
+- Reset graph aggregates for the LANDING, HERE, and EXITS panel model.
+
 ## 0.2.4 - 2026-06-17
 
 - Changed LANDING referrer and UTM panels to accumulate per cumulative landing page position.

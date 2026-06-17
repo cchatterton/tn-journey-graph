@@ -76,7 +76,7 @@ function tnjg_get_hops(int $resource_id): array
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT hop_key, SUM(item_count) AS count
         FROM {$graph}
-        WHERE anchor_resource_id = %d AND panel_key = 'landing_pages'
+        WHERE anchor_resource_id = %d AND panel_key = 'here_pages'
         GROUP BY hop_key",
         $resource_id
     ));
@@ -84,10 +84,6 @@ function tnjg_get_hops(int $resource_id): array
 
     foreach ($rows as $row) {
         $key = (string) $row->hop_key;
-        if ('0' === $key) {
-            continue;
-        }
-
         $hops[$key] = array(
             'key' => $key,
             'label' => $key,
@@ -156,8 +152,7 @@ function tnjg_get_content_type_options(int $resource_id, string $hop_key): array
     $graph = tnjg_table('journey_graph');
     $content_panels = array(
         'landing_content_types',
-        'before_content_types',
-        'after_content_types',
+        'here_content_types',
         'exit_content_types',
     );
     $placeholders = implode(',', array_fill(0, count($content_panels), '%s'));
@@ -221,10 +216,8 @@ function tnjg_filter_sql(string $filter, string $panel_key): string
     $filterable_panels = array(
         'landing_pages',
         'landing_content_types',
-        'before_pages',
-        'before_content_types',
-        'after_pages',
-        'after_content_types',
+        'here_pages',
+        'here_content_types',
         'exit_pages',
         'exit_content_types',
     );
