@@ -72,7 +72,7 @@
 .tnjg-tabs {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   overflow-x: auto;
   padding-bottom: 4px;
   margin-bottom: 7px;
@@ -83,24 +83,13 @@
   flex: 0 0 auto;
   border: 1px solid rgba(118, 92, 255, calc(0.18 + (var(--tnjg-intensity, 0.2) * 0.45)));
   border-radius: 8px;
-  background: rgba(118, 92, 255, calc(0.06 + (var(--tnjg-intensity, 0.2) * 0.22)));
+  background: rgba(118, 92, 255, calc(0.12 + (var(--tnjg-intensity, 0.2) * 0.42)));
   color: #dfe2f2;
   cursor: pointer;
   font-size: 10px;
   font-weight: 700;
   padding: 6px 8px;
   opacity: calc(0.62 + (var(--tnjg-intensity, 0.2) * 0.38));
-}
-
-.tnjg-tab::after {
-  position: absolute;
-  right: 6px;
-  bottom: 2px;
-  left: 6px;
-  height: calc(1px + (var(--tnjg-intensity, 0.2) * 3px));
-  border-radius: 999px;
-  background: rgba(141, 115, 255, 0.9);
-  content: "";
 }
 
 .tnjg-tab--active {
@@ -171,7 +160,7 @@
 .tnjg-card {
   min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 0;
   background: linear-gradient(180deg, rgba(16, 22, 34, 0.98), rgba(8, 12, 20, 0.98));
   padding: 6px;
 }
@@ -183,12 +172,14 @@
 .tnjg-card h3 {
   margin: 0;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1.15;
   letter-spacing: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: bold;
+  opacity: 0.5;
 }
 
 .tnjg-bar-row {
@@ -203,9 +194,11 @@
 .tnjg-bar-row__top {
   display: block;
   color: #f6f7fb;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   line-height: 1.05;
+  font-weight: bold;
+  opacity: 0.8;
 }
 
 .tnjg-bar-row__top a,

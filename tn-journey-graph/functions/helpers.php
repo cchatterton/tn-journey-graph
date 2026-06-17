@@ -146,6 +146,11 @@ function tnjg_resolve_current_resource_id(array $context): int
 
 function tnjg_sanitize_object_filter(string $filter): string
 {
+    if (str_starts_with($filter, 'type:')) {
+        $type = sanitize_key(substr($filter, 5));
+        return $type ? 'type:' . $type : 'all';
+    }
+
     $allowed = array('all', 'pages', 'posts', 'campaigns', 'custom_post_types', 'unknown_urls', 'external', 'exit');
     return in_array($filter, $allowed, true) ? $filter : 'all';
 }

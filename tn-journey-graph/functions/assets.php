@@ -38,7 +38,7 @@ function tnjg_enqueue_frontend_assets(): void
             'loading' => __('Loading journey data…', 'tn-journey-graph'),
             'empty' => __('No processed journey data is available for this page yet.', 'tn-journey-graph'),
             'error' => __('Journey data could not be loaded.', 'tn-journey-graph'),
-            'filter' => __('Object type filter', 'tn-journey-graph'),
+            'filter' => __('Content type filter', 'tn-journey-graph'),
         ),
     ));
 }

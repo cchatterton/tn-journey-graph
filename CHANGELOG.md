@@ -2,6 +2,13 @@
 
 All notable changes to Techn Journey Graph are recorded here.
 
+## 0.1.14 - 2026-06-17
+
+- Renamed the top-bar filter from object type to content type.
+- Changed the content type filter options to be generated from the selected hop's content type panels.
+- Added support for exact dynamic content type filtering.
+- Updated Journey Explorer card, label, tab heatmap, and spacing styles.
+
 ## 0.1.13 - 2026-06-17
 
 - Changed LANDING panels to use cumulative pages from the selected negative hop through hop 0.

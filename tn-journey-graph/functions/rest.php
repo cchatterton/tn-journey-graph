@@ -53,7 +53,7 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
     $hops = tnjg_get_hops($resource_id);
     $selected_hop = sanitize_text_field((string) $request->get_param('hop'));
     if (!$selected_hop || !isset($hops[$selected_hop])) {
-        $selected_hop = isset($hops['0']) ? '0' : (string) array_key_first($hops);
+        $selected_hop = (string) array_key_first($hops);
     }
 
     return rest_ensure_response(array(
@@ -61,6 +61,7 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
         'freshness' => tnjg_format_datetime($status['last_processed_at']),
         'hops' => array_values($hops),
         'selectedHop' => $selected_hop,
+        'contentTypes' => $selected_hop ? tnjg_get_content_type_options($resource_id, $selected_hop) : array(),
         'groups' => $selected_hop ? tnjg_get_panel_groups($resource_id, $selected_hop, tnjg_sanitize_object_filter((string) $request->get_param('filter'))) : array(),
         'emptyMessage' => empty($hops)
             ? __('No processed journey data is available for this page yet.', 'tn-journey-graph')
@@ -133,12 +134,42 @@ function tnjg_get_panel_groups(int $resource_id, string $hop_key, string $filter
     return $groups;
 }
 
+function tnjg_get_content_type_options(int $resource_id, string $hop_key): array
+{
+    global $wpdb;
+    $graph = tnjg_table('journey_graph');
+    $content_panels = array(
+        'landing_content_types',
+        'before_content_types',
+        'after_content_types',
+        'exit_content_types',
+    );
+    $placeholders = implode(',', array_fill(0, count($content_panels), '%s'));
+    $params = array_merge(array($resource_id, $hop_key), $content_panels);
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT object_type, item_label, SUM(item_count) AS total_count
+        FROM {$graph}
+        WHERE anchor_resource_id = %d AND hop_key = %s AND panel_key IN ({$placeholders}) AND object_type <> ''
+        GROUP BY object_type, item_label
+        ORDER BY total_count DESC, item_label ASC",
+        $params
+    ));
+
+    return array_map(static function ($row): array {
+        return array(
+            'value' => 'type:' . sanitize_key((string) $row->object_type),
+            'label' => (string) $row->item_label,
+            'count' => (int) $row->total_count,
+        );
+    }, is_array($rows) ? $rows : array());
+}
+
 function tnjg_get_panel_items(int $resource_id, string $hop_key, string $panel_key, string $filter): array
 {
     global $wpdb;
     $graph = tnjg_table('journey_graph');
     $limit = 5;
-    $type_sql = tnjg_filter_sql($filter);
+    $type_sql = tnjg_filter_sql($filter, $panel_key);
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT item_label, item_count, item_url, object_type, object_id
         FROM {$graph}
@@ -169,10 +200,30 @@ function tnjg_get_panel_items(int $resource_id, string $hop_key, string $panel_k
     }, is_array($rows) ? $rows : array());
 }
 
-function tnjg_filter_sql(string $filter): string
+function tnjg_filter_sql(string $filter, string $panel_key): string
 {
+    $filterable_panels = array(
+        'landing_pages',
+        'landing_content_types',
+        'before_pages',
+        'before_content_types',
+        'after_pages',
+        'after_content_types',
+        'exit_pages',
+        'exit_content_types',
+    );
+
+    if (!in_array($panel_key, $filterable_panels, true)) {
+        return '';
+    }
+
     if ('all' === $filter) {
         return '';
+    }
+
+    if (str_starts_with($filter, 'type:')) {
+        $type = sanitize_key(substr($filter, 5));
+        return $type ? "AND object_type = '" . esc_sql($type) . "'" : '';
     }
 
     $map = array(

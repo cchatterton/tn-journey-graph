@@ -134,16 +134,7 @@
   }
 
   function filtersMarkup() {
-    const options = [
-      ["all", "All"],
-      ["pages", "Pages"],
-      ["posts", "Posts"],
-      ["campaigns", "Campaigns"],
-      ["custom_post_types", "Custom post types"],
-      ["unknown_urls", "Unknown URLs"],
-      ["external", "External"],
-      ["exit", "Exit"],
-    ];
+    const options = contentTypeOptions();
 
     return `
       <label class="tnjg-filter">
@@ -153,6 +144,28 @@
         </select>
       </label>
     `;
+  }
+
+  function contentTypeOptions() {
+    const options = [["all", "All"]];
+    const seen = new Set(["all"]);
+    const contentTypes = (state.data && state.data.contentTypes) || [];
+
+    contentTypes.forEach((contentType) => {
+      const value = String(contentType.value || "").trim();
+      const label = String(contentType.label || "").trim();
+
+      if (value && label && !seen.has(value)) {
+        seen.add(value);
+        options.push([value, label]);
+      }
+    });
+
+    if (!seen.has(state.filter)) {
+      state.filter = "all";
+    }
+
+    return options;
   }
 
   function panelMarkup(panelData) {
