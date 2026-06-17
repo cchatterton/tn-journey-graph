@@ -2,6 +2,14 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.7 - 2026-06-17
+
+- Fixed hop 0 selection so it is not treated as an empty request.
+- Qualified hop 0 LANDING and EXITS panels to the current page only when it is truly the landing or exit page.
+- Made hop tabs a consistent visual width.
+- Kept default and heatmap scaling focused on non-zero hops when available.
+- Reset graph aggregates for the corrected hop 0 qualification model.
+
 ## 0.2.6 - 2026-06-17
 
 - Hid hop tabs below 1% of the maximum hop volume.

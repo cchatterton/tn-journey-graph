@@ -385,7 +385,7 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
 
     $hop_key = tnjg_offset_key($offset);
     $landing_positions = tnjg_landing_range($offset, $anchor_position);
-    $exit_positions = tnjg_exit_range($offset, $anchor_position);
+    $exit_positions = tnjg_exit_range($offset, $anchor_position, count($views) - 1);
 
     foreach ($landing_positions as $position) {
         if (isset($views[$position])) {
@@ -427,7 +427,7 @@ function tnjg_offset_key(int $offset): string
 function tnjg_landing_range(int $offset, int $anchor_position): array
 {
     if ($offset >= 0) {
-        return array($anchor_position);
+        return 0 === $anchor_position ? array($anchor_position) : array();
     }
 
     $start = $anchor_position + $offset;
@@ -438,10 +438,10 @@ function tnjg_landing_range(int $offset, int $anchor_position): array
     return range($start, $anchor_position);
 }
 
-function tnjg_exit_range(int $offset, int $anchor_position): array
+function tnjg_exit_range(int $offset, int $anchor_position, int $last_position): array
 {
     if ($offset <= 0) {
-        return array($anchor_position);
+        return $anchor_position === $last_position ? array($anchor_position) : array();
     }
 
     return range($anchor_position, $anchor_position + $offset);

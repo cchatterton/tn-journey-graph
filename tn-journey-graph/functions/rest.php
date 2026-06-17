@@ -52,7 +52,7 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
 
     $hops = tnjg_get_hops($resource_id);
     $selected_hop = sanitize_text_field((string) $request->get_param('hop'));
-    if (!$selected_hop || !isset($hops[$selected_hop])) {
+    if ('' === $selected_hop || !isset($hops[$selected_hop])) {
         $selected_hop = tnjg_default_hop($hops);
     }
 
@@ -61,8 +61,8 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
         'freshness' => tnjg_format_datetime($status['last_processed_at']),
         'hops' => array_values($hops),
         'selectedHop' => $selected_hop,
-        'contentTypes' => $selected_hop ? tnjg_get_content_type_options($resource_id, $selected_hop) : array(),
-        'groups' => $selected_hop ? tnjg_get_panel_groups($resource_id, $selected_hop, tnjg_sanitize_object_filter((string) $request->get_param('filter'))) : array(),
+        'contentTypes' => '' !== $selected_hop ? tnjg_get_content_type_options($resource_id, $selected_hop) : array(),
+        'groups' => '' !== $selected_hop ? tnjg_get_panel_groups($resource_id, $selected_hop, tnjg_sanitize_object_filter((string) $request->get_param('filter'))) : array(),
         'emptyMessage' => empty($hops)
             ? __('No processed journey data is available for this page yet.', 'tn-journey-graph')
             : '',
@@ -125,6 +125,10 @@ function tnjg_default_hop(array $hops): string
 
     $default = null;
     foreach ($hops as $hop) {
+        if ('0' === (string) $hop['key'] && count($hops) > 1) {
+            continue;
+        }
+
         if (null === $default || (int) $hop['count'] > (int) $default['count']) {
             $default = $hop;
         }

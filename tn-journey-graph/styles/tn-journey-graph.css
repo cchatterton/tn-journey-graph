@@ -80,16 +80,18 @@
 
 .tnjg-tab {
   position: relative;
-  flex: 0 0 auto;
-  border: 1px solid rgba(118, 92, 255, calc(0.18 + (var(--tnjg-intensity, 0.2) * 0.45)));
+  flex: 0 0 32px;
+  width: 32px;
+  box-sizing: border-box;
+  border: 1px solid rgba(118, 92, 255, var(--tnjg-border-alpha, 0.28));
   border-radius: 8px;
-  background: rgba(118, 92, 255, calc(0.12 + (var(--tnjg-intensity, 0.2) * 0.42)));
+  background: rgba(118, 92, 255, var(--tnjg-bg-alpha, 0.2));
   color: #dfe2f2;
   cursor: pointer;
   font-size: 10px;
   font-weight: 700;
-  padding: 6px 8px;
-  opacity: calc(0.62 + (var(--tnjg-intensity, 0.2) * 0.38));
+  padding: 6px 0;
+  opacity: var(--tnjg-opacity, 0.72);
 }
 
 .tnjg-tab--active {

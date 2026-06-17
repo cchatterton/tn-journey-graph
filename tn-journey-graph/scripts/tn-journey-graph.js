@@ -103,14 +103,19 @@
   }
 
   function controlsMarkup(hops) {
-    const max = Math.max(...hops.map((hop) => Number(hop.count) || 0), 1);
+    const heatHops = hops.filter((hop) => String(hop.key) !== "0");
+    const heatSource = heatHops.length ? heatHops : hops;
+    const max = Math.max(...heatSource.map((hop) => Number(hop.count) || 0), 1);
     return `
       <div class="tnjg-tabs" role="tablist">
         ${hops
           .map((hop) => {
             const selected = hop.key === state.hop;
             const intensity = Math.max(0.16, Math.min(1, (Number(hop.count) || 0) / max)).toFixed(2);
-            return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}" title="${escapeAttr(number(hop.count))} journeys" style="--tnjg-intensity:${intensity}">${escapeHtml(hop.label)}</button>`;
+            const borderAlpha = (0.18 + (Number(intensity) * 0.45)).toFixed(2);
+            const backgroundAlpha = (0.12 + (Number(intensity) * 0.42)).toFixed(2);
+            const opacity = (0.62 + (Number(intensity) * 0.38)).toFixed(2);
+            return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}" title="${escapeAttr(number(hop.count))} journeys" style="--tnjg-border-alpha:${borderAlpha};--tnjg-bg-alpha:${backgroundAlpha};--tnjg-opacity:${opacity}">${escapeHtml(hop.label)}</button>`;
           })
           .join("")}
         ${filtersMarkup()}
