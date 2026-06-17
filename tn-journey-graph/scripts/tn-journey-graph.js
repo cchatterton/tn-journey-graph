@@ -142,8 +142,7 @@
 
     return `
       <label class="tnjg-filter">
-        <span>${escapeHtml(root.labels.filter)}</span>
-        <select>
+        <select aria-label="${escapeAttr(root.labels.filter)}">
           ${options.map(([value, label]) => `<option value="${value}"${value === state.filter ? " selected" : ""}>${label}</option>`).join("")}
         </select>
       </label>

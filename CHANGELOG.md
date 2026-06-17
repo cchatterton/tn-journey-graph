@@ -2,6 +2,11 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.1.16 - 2026-06-17
+
+- Increased the Journey Explorer drawer z-index.
+- Removed the visible content type filter label from the top control bar.
+
 ## 0.1.15 - 2026-06-17
 
 - Renamed the plugin to TN Journey Graph.

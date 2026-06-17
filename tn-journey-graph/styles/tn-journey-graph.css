@@ -26,7 +26,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 99999;
+  z-index: 9999999999;
   width: 100vw;
   max-height: 58vh;
   background: #070b12;
