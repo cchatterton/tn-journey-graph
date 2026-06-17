@@ -2,6 +2,13 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.8 - 2026-06-17
+
+- Restored directional boundary collapse for LANDING and EXITS around the current page.
+- LANDING now resolves to the current page at hop 0 and positive hops.
+- EXITS now resolves to the current page at hop 0 and negative hops.
+- Reset graph aggregates for the corrected boundary model.
+
 ## 0.2.7 - 2026-06-17
 
 - Fixed hop 0 selection so it is not treated as an empty request.

@@ -427,7 +427,7 @@ function tnjg_offset_key(int $offset): string
 function tnjg_landing_range(int $offset, int $anchor_position): array
 {
     if ($offset >= 0) {
-        return 0 === $anchor_position ? array($anchor_position) : array();
+        return array($anchor_position);
     }
 
     $start = $anchor_position + $offset;
@@ -441,7 +441,7 @@ function tnjg_landing_range(int $offset, int $anchor_position): array
 function tnjg_exit_range(int $offset, int $anchor_position, int $last_position): array
 {
     if ($offset <= 0) {
-        return $anchor_position === $last_position ? array($anchor_position) : array();
+        return array($anchor_position);
     }
 
     return range($anchor_position, $anchor_position + $offset);
