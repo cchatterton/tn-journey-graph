@@ -91,8 +91,25 @@ function tnjg_get_hops(int $resource_id): array
         );
     }
 
+    $hops = tnjg_filter_low_volume_hops($hops);
     uasort($hops, 'tnjg_sort_hops');
     return $hops;
+}
+
+function tnjg_filter_low_volume_hops(array $hops): array
+{
+    if (empty($hops)) {
+        return array();
+    }
+
+    $max = max(array_map(static function (array $hop): int {
+        return (int) $hop['count'];
+    }, $hops));
+    $threshold = max(1, (int) ceil($max * 0.01));
+
+    return array_filter($hops, static function (array $hop) use ($threshold): bool {
+        return (int) $hop['count'] >= $threshold;
+    });
 }
 
 function tnjg_sort_hops(array $a, array $b): int

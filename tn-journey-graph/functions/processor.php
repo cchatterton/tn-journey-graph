@@ -109,6 +109,15 @@ function tnjg_queue_historical_sessions(): void
     ));
 }
 
+function tnjg_start_processing_again(): void
+{
+    tnjg_reset_processing_data(__('Journey data was reset and historical sessions were queued again.', 'tn-journey-graph'));
+    tnjg_refresh_session_queue(max(1, (int) tnjg_get_option('inactivity_threshold_minutes')));
+    tnjg_update_status(array(
+        'queue_counts' => tnjg_queue_counts(),
+    ));
+}
+
 function tnjg_refresh_session_queue(int $threshold): void
 {
     global $wpdb;
@@ -541,6 +550,11 @@ function tnjg_maybe_upgrade_graph_schema(): void
         return;
     }
 
+    tnjg_reset_processing_data(__('Journey aggregates were reset for the latest graph model and historical sessions will be reprocessed.', 'tn-journey-graph'));
+}
+
+function tnjg_reset_processing_data(string $message): void
+{
     global $wpdb;
     $graph = tnjg_table('journey_graph');
     $queue = tnjg_table('session_queue');
@@ -557,7 +571,7 @@ function tnjg_maybe_upgrade_graph_schema(): void
     tnjg_update_status(array(
         'last_processed_at' => '',
         'status' => 'queued',
-        'message' => __('Journey aggregates were reset for the latest graph model and historical sessions will be reprocessed.', 'tn-journey-graph'),
+        'message' => $message,
         'processed_sessions' => 0,
         'queue_counts' => array('open' => 0, 'ready' => 0, 'processed' => 0, 'skipped' => 0),
     ));

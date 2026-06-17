@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
 add_action('admin_menu', 'tnjg_add_admin_page');
 add_action('admin_init', 'tnjg_register_settings');
 add_action('admin_post_tnjg_manual_process', 'tnjg_handle_manual_process');
+add_action('admin_post_tnjg_start_again', 'tnjg_handle_start_again');
 
 function tnjg_add_admin_page(): void
 {
@@ -58,6 +59,18 @@ function tnjg_handle_manual_process(): void
     exit;
 }
 
+function tnjg_handle_start_again(): void
+{
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('You do not have permission to reset journey data.', 'tn-journey-graph'));
+    }
+
+    check_admin_referer('tnjg_start_again');
+    tnjg_start_processing_again();
+    wp_safe_redirect(add_query_arg(array('page' => 'tn-journey-graph', 'tnjg_started_again' => '1'), admin_url('options-general.php')));
+    exit;
+}
+
 function tnjg_render_admin_page(): void
 {
     if (!current_user_can('manage_options')) {
@@ -73,6 +86,9 @@ function tnjg_render_admin_page(): void
         <h1><?php echo esc_html__('TN Journey Graph', 'tn-journey-graph'); ?></h1>
         <?php if (!empty($_GET['tnjg_processed'])) : ?>
             <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Journey processing run completed.', 'tn-journey-graph'); ?></p></div>
+        <?php endif; ?>
+        <?php if (!empty($_GET['tnjg_started_again'])) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Journey data was reset and historical sessions were queued again.', 'tn-journey-graph'); ?></p></div>
         <?php endif; ?>
         <form method="post" action="options.php">
             <?php settings_fields('tnjg_settings'); ?>
@@ -129,6 +145,11 @@ function tnjg_render_admin_page(): void
             <?php wp_nonce_field('tnjg_manual_process'); ?>
             <input type="hidden" name="action" value="tnjg_manual_process">
             <?php submit_button(__('Process completed sessions now', 'tn-journey-graph'), 'secondary', 'submit', false); ?>
+        </form>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:10px;">
+            <?php wp_nonce_field('tnjg_start_again'); ?>
+            <input type="hidden" name="action" value="tnjg_start_again">
+            <?php submit_button(__('Start again', 'tn-journey-graph'), 'delete', 'submit', false, array('onclick' => "return confirm('" . esc_js(__('This will clear Journey Graph aggregates and queue all historical sessions again. Continue?', 'tn-journey-graph')) . "');")); ?>
         </form>
     </div>
     <?php

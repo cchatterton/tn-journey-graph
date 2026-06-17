@@ -2,6 +2,12 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.6 - 2026-06-17
+
+- Hid hop tabs below 1% of the maximum hop volume.
+- Added a Start again button to reset journey aggregates and requeue historical sessions.
+- Reset graph aggregates to ensure hop 0 HERE data is rebuilt from the current page model.
+
 ## 0.2.5 - 2026-06-17
 
 - Restored hop 0 to the Journey Explorer tabs.
