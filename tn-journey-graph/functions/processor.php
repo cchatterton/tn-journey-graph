@@ -383,14 +383,11 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
             $landing_subject = $views[$position];
             tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_pages', tnjg_value($landing_subject->cached_title, __('Unknown landing page', 'tn-journey-graph')), $landing_subject, true);
             tnjg_increment_label_item($anchor_id, $hop_key, 'landing_content_types', tnjg_value($landing_subject->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($landing_subject));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
         }
-    }
-
-    if (!empty($landing_positions)) {
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'landing_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
     }
 
     foreach (tnjg_before_range($offset, $anchor_position) as $position) {
@@ -398,14 +395,11 @@ function tnjg_add_hop_aggregates(object $anchor, int $offset, array $views, obje
             $before = $views[$position];
             tnjg_increment_graph_item($anchor_id, $hop_key, 'before_pages', tnjg_value($before->cached_title, __('Unknown page', 'tn-journey-graph')), $before, true);
             tnjg_increment_label_item($anchor_id, $hop_key, 'before_content_types', tnjg_value($before->cached_type_label, __('Unknown URL', 'tn-journey-graph')), tnjg_object_type($before));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'before_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
+            tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
         }
-    }
-
-    if (!empty(tnjg_before_range($offset, $anchor_position))) {
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_referrers', tnjg_value($session->referrer_domain, __('Direct', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_sources', tnjg_value($session->utm_source, __('None', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_channels', tnjg_value($session->utm_medium, __('None', 'tn-journey-graph')));
-        tnjg_increment_graph_item($anchor_id, $hop_key, 'before_utm_campaigns', tnjg_value($session->utm_campaign, __('None', 'tn-journey-graph')));
     }
 
     foreach (tnjg_after_range($offset, $anchor_position) as $position) {

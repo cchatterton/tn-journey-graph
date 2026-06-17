@@ -2,6 +2,12 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.4 - 2026-06-17
+
+- Changed LANDING referrer and UTM panels to accumulate per cumulative landing page position.
+- Changed BEFORE referrer and UTM panels to accumulate per included before page position.
+- Reset graph aggregates so supporting panels align with their page panels.
+
 ## 0.2.3 - 2026-06-17
 
 - Changed the active hop tab to use a white border while preserving the heatmap background.
