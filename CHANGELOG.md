@@ -2,6 +2,11 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.9 - 2026-06-17
+
+- Changed the default inactivity threshold to 45 minutes.
+- Removed unused Enabled post types, Default histogram items, and Data retention days settings.
+
 ## 0.2.8 - 2026-06-17
 
 - Restored directional boundary collapse for LANDING and EXITS around the current page.

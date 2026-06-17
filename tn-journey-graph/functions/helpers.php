@@ -11,19 +11,14 @@ function tnjg_default_options(): array
         'required_capability' => 'manage_options',
         'processing_frequency' => 'hourly',
         'processing_batch_size' => 100,
-        'inactivity_threshold_minutes' => 30,
-        'histogram_items' => 10,
-        'enabled_object_types' => array('page', 'post'),
-        'retention_days' => 365,
+        'inactivity_threshold_minutes' => 45,
     );
 }
 
 function tnjg_get_options(): array
 {
     $options = get_option('tnjg_options', array());
-    $merged = wp_parse_args(is_array($options) ? $options : array(), tnjg_default_options());
-    $merged['enabled_object_types'] = is_array($merged['enabled_object_types']) ? $merged['enabled_object_types'] : array();
-    return $merged;
+    return wp_parse_args(is_array($options) ? $options : array(), tnjg_default_options());
 }
 
 function tnjg_get_option(string $key)

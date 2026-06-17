@@ -1,7 +1,7 @@
 # TN Journey Graph
 
 Author: Techn  
-Version: 0.2.8  
+Version: 0.2.9  
 Status: MVP
 
 ## Purpose
@@ -16,7 +16,7 @@ TN Journey Graph is a WordPress extension for Independent Analytics Pro. It lets
 - Ten reusable histogram panels for referrer, UTM, content type, and landing page distributions.
 - Background processing of completed Independent Analytics sessions into aggregate journey graph data.
 - Protected REST endpoint for precomputed journey data.
-- Settings page for permissions, processing frequency, hop limits, histogram limits, object types, retention, status, and manual processing.
+- Settings page for permissions, processing frequency, processing threshold, status, and manual processing.
 - GitHub release updater for `cchatterton/tn-journey-graph`.
 
 ## Folder Structure

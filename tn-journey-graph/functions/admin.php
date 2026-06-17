@@ -32,7 +32,6 @@ function tnjg_register_settings(): void
 function tnjg_sanitize_options(array $input): array
 {
     $defaults = tnjg_default_options();
-    $post_types = get_post_types(array('public' => true), 'names');
     $frequency = sanitize_key((string) ($input['processing_frequency'] ?? $defaults['processing_frequency']));
 
     return array(
@@ -41,9 +40,6 @@ function tnjg_sanitize_options(array $input): array
         'processing_frequency' => in_array($frequency, array('tnjg_every_minute', 'hourly', 'twicedaily', 'daily'), true) ? $frequency : 'hourly',
         'processing_batch_size' => max(1, min(1000, absint($input['processing_batch_size'] ?? $defaults['processing_batch_size']))),
         'inactivity_threshold_minutes' => max(1, absint($input['inactivity_threshold_minutes'] ?? $defaults['inactivity_threshold_minutes'])),
-        'histogram_items' => max(1, min(50, absint($input['histogram_items'] ?? $defaults['histogram_items']))),
-        'enabled_object_types' => array_values(array_intersect(array_map('sanitize_key', (array) ($input['enabled_object_types'] ?? array())), $post_types)),
-        'retention_days' => max(30, absint($input['retention_days'] ?? $defaults['retention_days'])),
     );
 }
 
@@ -80,7 +76,6 @@ function tnjg_render_admin_page(): void
     $options = tnjg_get_options();
     $status = tnjg_status();
     $queue_counts = is_array($status['queue_counts'] ?? null) ? $status['queue_counts'] : array();
-    $post_types = get_post_types(array('public' => true), 'objects');
     ?>
     <div class="wrap">
         <h1><?php echo esc_html__('TN Journey Graph', 'tn-journey-graph'); ?></h1>
@@ -113,19 +108,6 @@ function tnjg_render_admin_page(): void
                 </tr>
                 <?php tnjg_number_row('processing_batch_size', __('Processing batch size', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('inactivity_threshold_minutes', __('Inactivity threshold minutes', 'tn-journey-graph'), $options); ?>
-                <?php tnjg_number_row('histogram_items', __('Default histogram items', 'tn-journey-graph'), $options); ?>
-                <?php tnjg_number_row('retention_days', __('Data retention days', 'tn-journey-graph'), $options); ?>
-                <tr>
-                    <th scope="row"><?php echo esc_html__('Enabled post types', 'tn-journey-graph'); ?></th>
-                    <td>
-                        <?php foreach ($post_types as $post_type) : ?>
-                            <label style="display:block;margin-bottom:4px;">
-                                <input type="checkbox" name="tnjg_options[enabled_object_types][]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked(in_array($post_type->name, $options['enabled_object_types'], true)); ?>>
-                                <?php echo esc_html($post_type->labels->singular_name); ?>
-                            </label>
-                        <?php endforeach; ?>
-                    </td>
-                </tr>
             </table>
             <?php submit_button(); ?>
         </form>
