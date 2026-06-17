@@ -2,6 +2,10 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.0 - 2026-06-17
+
+- Increased Journey Explorer card height to 140px.
+
 ## 0.1.16 - 2026-06-17
 
 - Increased the Journey Explorer drawer z-index.
