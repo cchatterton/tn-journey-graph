@@ -2,6 +2,10 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.13 - 2026-06-17
+
+- Adjusted Journey Explorer panel height and micro-histogram bar spacing.
+
 ## 0.2.12 - 2026-06-17
 
 - Added an options-page setting for the maximum number of panel items.
