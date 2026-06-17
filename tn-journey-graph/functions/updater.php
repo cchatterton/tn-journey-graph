@@ -79,7 +79,7 @@ class TNJG_GitHub_Updater
         }
 
         return (object) array(
-            'name' => 'Techn Journey Graph',
+            'name' => 'TN Journey Graph',
             'slug' => self::SLUG,
             'version' => $this->release_version($release) ?: TNJG_VERSION,
             'author' => 'Techn',

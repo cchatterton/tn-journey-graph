@@ -2,6 +2,8 @@
   const root = window.TNJG || {};
   const launch = document.querySelector(".tnjg-launch");
   const panel = document.querySelector("#tnjg-panel");
+  const storageKey = "tnjg.panelOpen";
+  const maxRows = 5;
 
   if (!launch || !panel || !root.restUrl) {
     return;
@@ -59,6 +61,7 @@
 
   function openPanel() {
     state.open = true;
+    setPanelPreference(true);
     launch.setAttribute("aria-expanded", "true");
     panel.setAttribute("aria-hidden", "false");
     panel.classList.add("tnjg-panel--open");
@@ -67,6 +70,7 @@
 
   function closePanel() {
     state.open = false;
+    setPanelPreference(false);
     launch.setAttribute("aria-expanded", "false");
     panel.setAttribute("aria-hidden", "true");
     panel.classList.remove("tnjg-panel--open");
@@ -169,17 +173,23 @@
   }
 
   function panelMarkup(panelData) {
-    const items = panelData.items || [];
-    const body = items.length
-      ? items.map(itemMarkup).join("")
-      : `<div class="tnjg-empty-row">No data</div>`;
+    const items = (panelData.items || []).slice(0, maxRows);
+    const rows = items.map(itemMarkup);
+
+    if (rows.length === 0) {
+      rows.push(emptyRowMarkup("No data"));
+    }
+
+    while (rows.length < maxRows) {
+      rows.push(emptyRowMarkup(""));
+    }
 
     return `
       <article class="tnjg-card">
         <div class="tnjg-card__head">
           <h3>${escapeHtml(panelData.title)}</h3>
         </div>
-        <div class="tnjg-bars">${body}</div>
+        <div class="tnjg-bars">${rows.join("")}</div>
       </article>
     `;
   }
@@ -197,6 +207,19 @@
         </div>
         <div class="tnjg-bar-row__track">
           <span style="width:${percent}%"></span>
+        </div>
+      </div>
+    `;
+  }
+
+  function emptyRowMarkup(label) {
+    return `
+      <div class="tnjg-bar-row tnjg-bar-row--empty">
+        <div class="tnjg-bar-row__top">
+          <span>${escapeHtml(label)}</span>
+        </div>
+        <div class="tnjg-bar-row__track">
+          <span style="width:0"></span>
         </div>
       </div>
     `;
@@ -242,6 +265,22 @@
     return new Intl.NumberFormat().format(Number(value) || 0);
   }
 
+  function getPanelPreference() {
+    try {
+      return window.localStorage.getItem(storageKey) === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setPanelPreference(open) {
+    try {
+      window.localStorage.setItem(storageKey, open ? "1" : "0");
+    } catch (error) {
+      // Ignore storage failures; the drawer still works for this page view.
+    }
+  }
+
   launch.addEventListener("click", () => {
     if (state.open) {
       closePanel();
@@ -255,4 +294,8 @@
       closePanel();
     }
   });
+
+  if (getPanelPreference()) {
+    openPanel();
+  }
 })();

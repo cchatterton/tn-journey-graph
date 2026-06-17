@@ -1,12 +1,12 @@
-# Techn Journey Graph
+# TN Journey Graph
 
 Author: Techn  
-Version: 0.1.14  
+Version: 0.1.15  
 Status: MVP
 
 ## Purpose
 
-Techn Journey Graph is a WordPress extension for Independent Analytics Pro. It lets authorised logged-in users explore preprocessed visitor journeys from the public front end without adding new tracking, cookies, or a separate visitor identity system.
+TN Journey Graph is a WordPress extension for Independent Analytics Pro. It lets authorised logged-in users explore preprocessed visitor journeys from the public front end without adding new tracking, cookies, or a separate visitor identity system.
 
 ## Key Features
 

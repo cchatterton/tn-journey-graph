@@ -159,10 +159,13 @@
 
 .tnjg-card {
   min-width: 0;
+  height: 134px;
+  box-sizing: border-box;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0;
   background: linear-gradient(180deg, rgba(16, 22, 34, 0.98), rgba(8, 12, 20, 0.98));
   padding: 6px;
+  overflow: hidden;
 }
 
 .tnjg-card__head {
@@ -184,6 +187,7 @@
 
 .tnjg-bar-row {
   position: relative;
+  height: 18px;
   margin-top: 4px;
 }
 
@@ -193,12 +197,21 @@
 
 .tnjg-bar-row__top {
   display: block;
+  height: 9px;
   color: #f6f7fb;
   font-size: 9px;
   font-weight: 700;
   line-height: 1.05;
   font-weight: bold;
   opacity: 0.8;
+}
+
+.tnjg-bar-row--empty {
+  opacity: 0.72;
+}
+
+.tnjg-bar-row--empty .tnjg-bar-row__track {
+  visibility: hidden;
 }
 
 .tnjg-bar-row__top a,
@@ -233,22 +246,18 @@
   box-shadow: 0 0 18px rgba(118, 76, 255, 0.38);
 }
 
-.tnjg-empty-row,
-.tnjg-state {
-  color: #aeb4c9;
-  font-size: 10px;
-  line-height: 1.5;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .tnjg-state {
   min-height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  color: #aeb4c9;
+  font-size: 10px;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tnjg-state--error {

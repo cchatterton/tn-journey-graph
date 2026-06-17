@@ -11,7 +11,7 @@ add_action('admin_post_tnjg_manual_process', 'tnjg_handle_manual_process');
 function tnjg_add_admin_page(): void
 {
     add_options_page(
-        __('Techn Journey Graph', 'tn-journey-graph'),
+        __('TN Journey Graph', 'tn-journey-graph'),
         __('Journey Graph', 'tn-journey-graph'),
         'manage_options',
         'tn-journey-graph',
@@ -72,7 +72,7 @@ function tnjg_render_admin_page(): void
     $post_types = get_post_types(array('public' => true), 'objects');
     ?>
     <div class="wrap">
-        <h1><?php echo esc_html__('Techn Journey Graph', 'tn-journey-graph'); ?></h1>
+        <h1><?php echo esc_html__('TN Journey Graph', 'tn-journey-graph'); ?></h1>
         <?php if (!empty($_GET['tnjg_processed'])) : ?>
             <div class="notice notice-success is-dismissible"><p><?php echo esc_html__('Journey processing run completed.', 'tn-journey-graph'); ?></p></div>
         <?php endif; ?>

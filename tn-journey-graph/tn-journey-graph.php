@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Techn Journey Graph
+ * Plugin Name: TN Journey Graph
  * Plugin URI: https://github.com/cchatterton/tn-journey-graph/releases/latest
  * Description: Front-end journey exploration for authorised users, powered by completed Independent Analytics sessions.
- * Version: 0.1.14
+ * Version: 0.1.15
  * Requires at least: 6.0
  * Requires PHP: 8.1
  * Update URI: https://github.com/cchatterton/tn-journey-graph
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TNJG_VERSION', '0.1.14');
+define('TNJG_VERSION', '0.1.15');
 define('TNJG_GRAPH_SCHEMA_VERSION', '6');
 define('TNJG_PLUGIN_FILE', __FILE__);
 define('TNJG_PLUGIN_DIR', plugin_dir_path(__FILE__));

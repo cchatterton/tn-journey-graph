@@ -1,6 +1,12 @@
 # Changelog
 
-All notable changes to Techn Journey Graph are recorded here.
+All notable changes to TN Journey Graph are recorded here.
+
+## 0.1.15 - 2026-06-17
+
+- Renamed the plugin to TN Journey Graph.
+- Made Journey Explorer cards a consistent five-row height regardless of data volume.
+- Persisted the Journey Explorer open or closed state across page navigation.
 
 ## 0.1.14 - 2026-06-17
 
