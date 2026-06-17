@@ -53,7 +53,7 @@ function tnjg_rest_get_journey(WP_REST_Request $request): WP_REST_Response
     $hops = tnjg_get_hops($resource_id);
     $selected_hop = sanitize_text_field((string) $request->get_param('hop'));
     if (!$selected_hop || !isset($hops[$selected_hop])) {
-        $selected_hop = (string) array_key_first($hops);
+        $selected_hop = tnjg_default_hop($hops);
     }
 
     return rest_ensure_response(array(
@@ -102,6 +102,22 @@ function tnjg_get_hops(int $resource_id): array
 function tnjg_sort_hops(array $a, array $b): int
 {
     return tnjg_hop_weight($a['key']) <=> tnjg_hop_weight($b['key']);
+}
+
+function tnjg_default_hop(array $hops): string
+{
+    if (empty($hops)) {
+        return '';
+    }
+
+    $default = null;
+    foreach ($hops as $hop) {
+        if (null === $default || (int) $hop['count'] > (int) $default['count']) {
+            $default = $hop;
+        }
+    }
+
+    return (string) ($default['key'] ?? '');
 }
 
 function tnjg_hop_weight(string $key): int
