@@ -93,8 +93,7 @@
 }
 
 .tnjg-tab--active {
-  border-color: rgba(118, 92, 255, 0.9);
-  background: #6f49ff;
+  border-color: rgba(255, 255, 255, 0.95);
   color: #ffffff;
 }
 

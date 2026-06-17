@@ -2,6 +2,10 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.3 - 2026-06-17
+
+- Changed the active hop tab to use a white border while preserving the heatmap background.
+
 ## 0.2.2 - 2026-06-17
 
 - Changed the default selected hop to the highest-frequency available hop.
