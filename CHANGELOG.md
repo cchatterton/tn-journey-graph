@@ -2,6 +2,11 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.10 - 2026-06-17
+
+- Restored stronger hop heatmap styling while keeping the active hop marked by a white border.
+- Tightened hop visibility to remove one-journey long-tail sprawl while preserving the 1% max-volume rule.
+
 ## 0.2.9 - 2026-06-17
 
 - Changed the default inactivity threshold to 45 minutes.

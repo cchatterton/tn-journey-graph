@@ -111,10 +111,11 @@
         ${hops
           .map((hop) => {
             const selected = hop.key === state.hop;
-            const intensity = Math.max(0.16, Math.min(1, (Number(hop.count) || 0) / max)).toFixed(2);
-            const borderAlpha = (0.18 + (Number(intensity) * 0.45)).toFixed(2);
-            const backgroundAlpha = (0.12 + (Number(intensity) * 0.42)).toFixed(2);
-            const opacity = (0.62 + (Number(intensity) * 0.38)).toFixed(2);
+            const rawIntensity = Math.max(0, Math.min(1, (Number(hop.count) || 0) / max));
+            const intensity = Math.max(0.1, Math.sqrt(rawIntensity));
+            const borderAlpha = (0.18 + (intensity * 0.52)).toFixed(2);
+            const backgroundAlpha = (0.08 + (intensity * 0.58)).toFixed(2);
+            const opacity = (0.66 + (intensity * 0.34)).toFixed(2);
             return `<button class="tnjg-tab${selected ? " tnjg-tab--active" : ""}" type="button" role="tab" data-hop="${escapeAttr(hop.key)}" aria-selected="${selected ? "true" : "false"}" title="${escapeAttr(number(hop.count))} journeys" style="--tnjg-border-alpha:${borderAlpha};--tnjg-bg-alpha:${backgroundAlpha};--tnjg-opacity:${opacity}">${escapeHtml(hop.label)}</button>`;
           })
           .join("")}
