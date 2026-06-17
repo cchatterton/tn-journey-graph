@@ -2,6 +2,11 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.11 - 2026-06-17
+
+- Added an options-page setting for hop visibility threshold percentage.
+- Changed the default hop visibility threshold from 1% to 5%.
+
 ## 0.2.10 - 2026-06-17
 
 - Restored stronger hop heatmap styling while keeping the active hop marked by a white border.

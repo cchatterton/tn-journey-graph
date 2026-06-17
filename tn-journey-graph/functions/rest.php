@@ -105,7 +105,8 @@ function tnjg_filter_low_volume_hops(array $hops): array
     $max = max(array_map(static function (array $hop): int {
         return (int) $hop['count'];
     }, $hops));
-    $threshold = max(2, (int) ceil($max * 0.01));
+    $percentage = max(1, min(100, (int) tnjg_get_option('hop_visibility_threshold_percent')));
+    $threshold = max(2, (int) ceil($max * ($percentage / 100)));
 
     return array_filter($hops, static function (array $hop) use ($threshold): bool {
         return (int) $hop['count'] >= $threshold;

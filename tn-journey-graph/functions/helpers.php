@@ -12,6 +12,7 @@ function tnjg_default_options(): array
         'processing_frequency' => 'hourly',
         'processing_batch_size' => 100,
         'inactivity_threshold_minutes' => 45,
+        'hop_visibility_threshold_percent' => 5,
     );
 }
 
