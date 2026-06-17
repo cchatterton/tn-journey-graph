@@ -1,7 +1,7 @@
 # TN Journey Graph
 
 Author: Techn  
-Version: 0.2.0  
+Version: 0.2.1  
 Status: MVP
 
 ## Purpose

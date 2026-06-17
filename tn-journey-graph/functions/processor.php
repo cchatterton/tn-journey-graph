@@ -182,8 +182,7 @@ function tnjg_process_single_session(int $session_id): bool
     }
 
     $session = $views[0];
-    $max_prior = max(0, (int) tnjg_get_option('max_prior_hops'));
-    $max_next = max(0, (int) tnjg_get_option('max_next_hops'));
+    $last_position = count($views) - 1;
 
     $wpdb->query('START TRANSACTION');
 
@@ -191,16 +190,12 @@ function tnjg_process_single_session(int $session_id): bool
         foreach ($views as $position => $anchor) {
             tnjg_add_hop_aggregates($anchor, 0, $views, $session, $position);
 
-            for ($offset = 1; $offset <= $max_prior; $offset++) {
-                if (isset($views[$position - $offset])) {
-                    tnjg_add_hop_aggregates($anchor, -$offset, $views, $session, $position);
-                }
+            for ($offset = 1; $offset <= $position; $offset++) {
+                tnjg_add_hop_aggregates($anchor, -$offset, $views, $session, $position);
             }
 
-            for ($offset = 1; $offset <= $max_next; $offset++) {
-                if (isset($views[$position + $offset])) {
-                    tnjg_add_hop_aggregates($anchor, $offset, $views, $session, $position);
-                }
+            for ($offset = 1; $offset <= ($last_position - $position); $offset++) {
+                tnjg_add_hop_aggregates($anchor, $offset, $views, $session, $position);
             }
         }
 

@@ -40,8 +40,6 @@ function tnjg_sanitize_options(array $input): array
         'processing_frequency' => in_array($frequency, array('tnjg_every_minute', 'hourly', 'twicedaily', 'daily'), true) ? $frequency : 'hourly',
         'processing_batch_size' => max(1, min(1000, absint($input['processing_batch_size'] ?? $defaults['processing_batch_size']))),
         'inactivity_threshold_minutes' => max(1, absint($input['inactivity_threshold_minutes'] ?? $defaults['inactivity_threshold_minutes'])),
-        'max_prior_hops' => max(0, min(20, absint($input['max_prior_hops'] ?? $defaults['max_prior_hops']))),
-        'max_next_hops' => max(0, min(20, absint($input['max_next_hops'] ?? $defaults['max_next_hops']))),
         'histogram_items' => max(1, min(50, absint($input['histogram_items'] ?? $defaults['histogram_items']))),
         'enabled_object_types' => array_values(array_intersect(array_map('sanitize_key', (array) ($input['enabled_object_types'] ?? array())), $post_types)),
         'retention_days' => max(30, absint($input['retention_days'] ?? $defaults['retention_days'])),
@@ -99,8 +97,6 @@ function tnjg_render_admin_page(): void
                 </tr>
                 <?php tnjg_number_row('processing_batch_size', __('Processing batch size', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('inactivity_threshold_minutes', __('Inactivity threshold minutes', 'tn-journey-graph'), $options); ?>
-                <?php tnjg_number_row('max_prior_hops', __('Maximum prior hops', 'tn-journey-graph'), $options); ?>
-                <?php tnjg_number_row('max_next_hops', __('Maximum next hops', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('histogram_items', __('Default histogram items', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('retention_days', __('Data retention days', 'tn-journey-graph'), $options); ?>
                 <tr>

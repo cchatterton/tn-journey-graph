@@ -12,8 +12,6 @@ function tnjg_default_options(): array
         'processing_frequency' => 'hourly',
         'processing_batch_size' => 100,
         'inactivity_threshold_minutes' => 30,
-        'max_prior_hops' => 7,
-        'max_next_hops' => 5,
         'histogram_items' => 10,
         'enabled_object_types' => array('page', 'post'),
         'retention_days' => 365,

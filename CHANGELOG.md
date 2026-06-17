@@ -2,6 +2,12 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.1 - 2026-06-17
+
+- Removed the prior and next hop caps from journey graph processing.
+- Removed the prior and next hop limit settings from the admin screen.
+- Reset graph aggregates so hop tabs can show the real breadth of each journey.
+
 ## 0.2.0 - 2026-06-17
 
 - Increased Journey Explorer card height to 140px.
