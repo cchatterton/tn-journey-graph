@@ -2,6 +2,11 @@
 
 All notable changes to TN Journey Graph are recorded here.
 
+## 0.2.12 - 2026-06-17
+
+- Added an options-page setting for the maximum number of panel items.
+- Made panel bodies vertically scroll when item lists exceed the fixed panel height, with scrollbars hidden.
+
 ## 0.2.11 - 2026-06-17
 
 - Added an options-page setting for hop visibility threshold percentage.

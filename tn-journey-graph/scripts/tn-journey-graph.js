@@ -3,7 +3,6 @@
   const launch = document.querySelector(".tnjg-launch");
   const panel = document.querySelector("#tnjg-panel");
   const storageKey = "tnjg.panelOpen";
-  const maxRows = 5;
 
   if (!launch || !panel || !root.restUrl) {
     return;
@@ -178,15 +177,11 @@
   }
 
   function panelMarkup(panelData) {
-    const items = (panelData.items || []).slice(0, maxRows);
+    const items = panelData.items || [];
     const rows = items.map(itemMarkup);
 
     if (rows.length === 0) {
       rows.push(emptyRowMarkup("No data"));
-    }
-
-    while (rows.length < maxRows) {
-      rows.push(emptyRowMarkup(""));
     }
 
     return `

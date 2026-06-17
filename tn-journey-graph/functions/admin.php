@@ -41,6 +41,7 @@ function tnjg_sanitize_options(array $input): array
         'processing_batch_size' => max(1, min(1000, absint($input['processing_batch_size'] ?? $defaults['processing_batch_size']))),
         'inactivity_threshold_minutes' => max(1, absint($input['inactivity_threshold_minutes'] ?? $defaults['inactivity_threshold_minutes'])),
         'hop_visibility_threshold_percent' => max(1, min(100, absint($input['hop_visibility_threshold_percent'] ?? $defaults['hop_visibility_threshold_percent']))),
+        'max_panel_items' => max(1, min(50, absint($input['max_panel_items'] ?? $defaults['max_panel_items']))),
     );
 }
 
@@ -110,6 +111,7 @@ function tnjg_render_admin_page(): void
                 <?php tnjg_number_row('processing_batch_size', __('Processing batch size', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('inactivity_threshold_minutes', __('Inactivity threshold minutes', 'tn-journey-graph'), $options); ?>
                 <?php tnjg_number_row('hop_visibility_threshold_percent', __('Hop visibility threshold percent', 'tn-journey-graph'), $options); ?>
+                <?php tnjg_number_row('max_panel_items', __('Max panel items', 'tn-journey-graph'), $options); ?>
             </table>
             <?php submit_button(); ?>
         </form>

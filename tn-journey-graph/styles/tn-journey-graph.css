@@ -159,6 +159,8 @@
 }
 
 .tnjg-card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   height: 140px;
   box-sizing: border-box;
@@ -184,6 +186,17 @@
   text-overflow: ellipsis;
   font-weight: bold;
   opacity: 0.5;
+}
+
+.tnjg-bars {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.tnjg-bars::-webkit-scrollbar {
+  display: none;
 }
 
 .tnjg-bar-row {

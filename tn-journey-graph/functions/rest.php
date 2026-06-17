@@ -201,8 +201,16 @@ function tnjg_get_panel_items(int $resource_id, string $hop_key, string $panel_k
 {
     global $wpdb;
     $graph = tnjg_table('journey_graph');
-    $limit = 5;
+    $limit = max(1, min(50, (int) tnjg_get_option('max_panel_items')));
     $type_sql = tnjg_filter_sql($filter, $panel_key);
+    $total = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT SUM(item_count)
+        FROM {$graph}
+        WHERE anchor_resource_id = %d AND hop_key = %s AND panel_key = %s {$type_sql}",
+        $resource_id,
+        $hop_key,
+        $panel_key
+    ));
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT item_label, item_count, item_url, object_type, object_id
         FROM {$graph}
@@ -214,11 +222,6 @@ function tnjg_get_panel_items(int $resource_id, string $hop_key, string $panel_k
         $panel_key,
         $limit
     ));
-    $total = 0;
-
-    foreach (is_array($rows) ? $rows : array() as $row) {
-        $total += (int) $row->item_count;
-    }
 
     return array_map(static function ($row) use ($total): array {
         $count = (int) $row->item_count;
